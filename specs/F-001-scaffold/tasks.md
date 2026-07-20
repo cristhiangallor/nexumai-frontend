@@ -7,21 +7,31 @@ aplique (la prueba de humo define "verde"). Marca cada casilla al cerrarla.
       arranque (`npm run dev`) y compile. Verificar comando/plantilla en doc
       oficial. **Plantilla real: `react-ts` + `@vitejs/plugin-react` (Oxc)**,
       no `react-swc-ts` — ver nota N-1.
-- [ ] Git — resolver la discrepancia: init/clonar, conectar remoto, corregir la
-      línea de AGENTS.md, primer commit (Conventional Commits) con rama principal
-      protegida.
+- [x] Git — resuelto: `git init -b main`, remoto conectado
+      (`origin` → github.com/cristhiangallor/nexumai-frontend), `AGENTS.md`
+      corregido con el estado real del repo (NEX-14), primer commit
+      (Conventional Commits, `44963af`) y push a `origin/main`. Protección de
+      rama pendiente en el hosting (fuera del alcance del agente).
 - [x] (b) Integrar Tailwind CSS (guía oficial vigente para Vite).
       **Tailwind 4.3.3 vía `@tailwindcss/vite`** (no PostCSS) — ver nota N-3.
-- [ ] (c) Inicializar shadcn/ui sobre Base UI (flujo init vigente; confirmar soporte
-      de Base UI).
-- [ ] (d) Montar React Router v7 (SPA) con esqueleto de rutas para console/ y portal/.
-- [ ] (e) Crear estructura de carpetas src/ (core / features / console / portal).
-- [ ] (f) Configurar ESLint (flat) + Prettier, incluido el método vigente de orden
-      de clases de Tailwind (el agente indica cuál usa). En verde.
-- [ ] (g) Configurar Vitest + Testing Library con una prueba de humo que pasa.
-- [ ] Cierre — verificación final (arranca, compila, lint/formato verde, prueba
-      pasa); marcar los diez criterios de NEX-16; revisión humana; transicionar
-      NEX-16 a Finalizada y actualizar la página de secuencia.
+- [x] (c) Inicializar shadcn/ui sobre Base UI (flujo init vigente; confirmar soporte
+      de Base UI). Preset Custom (`b7BFgTjg8`, base color Mist), tokens de marca
+      del manual aplicados sobre las variables de shadcn — ver N-4/N-5.
+- [x] (d) Montar React Router v7 (SPA) con esqueleto de rutas para console/ y portal/.
+      `react-router@7.18.1`, modo Data (`createBrowserRouter` + `RouterProvider`).
+- [x] (e) Crear estructura de carpetas src/ (core / features / console / portal).
+      Demo del starter eliminado; landing provisional en "/" (ver TODO en
+      `Landing.tsx`).
+- [x] (f) Configurar ESLint (flat) + Prettier, incluido el método vigente de orden
+      de clases de Tailwind (el agente indica cuál usa). En verde. Ver N-9
+      (bajada a ESLint 9.x).
+- [x] (g) Configurar Vitest + Testing Library con una prueba de humo que pasa.
+      Vitest 4.1.10 + jsdom + Testing Library, integrado en `vite.config.ts`.
+      Prueba de humo de `Landing` en verde.
+- [x] Cierre — verificación final (arranca, compila, lint/formato verde, prueba
+      pasa); diez criterios de NEX-16 verificados con evidencia; README
+      actualizado. Revisión humana y transición de NEX-16 en Confluence: fuera
+      del alcance del agente.
 
 ---
 
@@ -125,12 +135,12 @@ puede proceder.
 
 **Condición 2 (Base UI) — cumplida y superada.** Desde **julio de 2026**,
 Base UI no solo está soportada: **es la librería por defecto de shadcn/ui**.
-Cita textual del changelog oficial: *"Starting today, Base UI is the default
-component library in shadcn/ui."* Sobre estabilidad: *"Base UI is stable. It's
-at 1.6.0 with 6M+ weekly downloads."* — no es experimental ni "en progreso".
+Cita textual del changelog oficial: _"Starting today, Base UI is the default
+component library in shadcn/ui."_ Sobre estabilidad: _"Base UI is stable. It's
+at 1.6.0 with 6M+ weekly downloads."_ — no es experimental ni "en progreso".
 
-Radix **no** queda deprecado: *"Radix is not being deprecated. We still support
-it, and every update and new component will ship for both libraries."*
+Radix **no** queda deprecado: _"Radix is not being deprecated. We still support
+it, and every update and new component will ship for both libraries."_
 
 **Esto valida la decisión de ADR-008 / `constitution/stack.md`** de elegir Base
 UI sobre Radix por la pérdida de mantenimiento de Radix tras la adquisición por
@@ -146,7 +156,7 @@ elección quede reproducible y auditable en el repo.
 
 **Condición 1 (Tailwind v4 CSS-first) — cumplida.** Ver N-3. Confirmación
 decisiva en la doc de `components.json`: sobre el campo `tailwind.config`,
-*"For Tailwind CSS v4, leave this blank."*
+_"For Tailwind CSS v4, leave this blank."_
 
 Fuente: changelog oficial shadcn/ui, "Base UI as the Default", julio 2026
 (https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default); doc de CLI y de
@@ -181,3 +191,35 @@ Verificación: sonda temporal importando un módulo vía `@/…`, comprobando qu
 valor llegaba al bundle compilado — esto ejercita la resolución tanto de
 TypeScript (`tsc -b`) como del bundler (Vite). Sonda revertida y confirmada
 ausente del bundle final.
+
+### N-9 — Sub-decisión de tooling: ESLint 9.x en vez del 10.x del scaffold
+
+`create-vite@9` generó el proyecto con **ESLint 10.7.0** (no es una decisión de
+stack registrada, a diferencia de React Router v7 en `stack.md`). Al montar el
+bloque (f), `eslint-plugin-jsx-a11y@6.10.2` (única versión publicada, sin
+release desde octubre de 2024) declara como peer `eslint@^3...^9` — no cubre
+ESLint 10.
+
+**Se evaluaron tres vías** antes de decidir (accesibilidad es criterio de
+"hecho" de NEX-42, se quería la base más sólida, no la más nueva):
+
+1. Fork `eslint-plugin-jsx-a11y-x@0.2.0` (cubre ESLint 10, pero versión muy
+   joven, sin historial).
+2. Original + `--legacy-peer-deps` sobre ESLint 10 (reglas maduras, pero fuerza
+   un peer roto y deja override permanente en `package-lock`).
+3. **Bajar a ESLint 9.x** (elegida).
+
+**Resolución aplicada:** se fijó **`eslint@9.39.5`** + **`@eslint/js@9.39.5`**
+(iban en lockstep). Verificado antes de aplicar: `typescript-eslint@8.62.0`,
+`eslint-plugin-react-hooks@7.1.1` y `eslint-plugin-react-refresh@0.5.3` ya
+declaraban soporte nativo para `^9.0.0` (cero cambios de versión en esos tres);
+`defineConfig`/`globalIgnores` de `eslint/config` (ya en uso) existen desde
+ESLint 9.22.0. `eslint-plugin-jsx-a11y@6.10.2` cubre `^9` sin forzar nada.
+
+**Por qué no es "quedarse atrás":** ESLint sigue publicando la serie 9.x en
+paralelo a la 10.x — `9.39.5` se liberó el mismo día que `10.7.0`
+(2026-07-10). Es la major anterior con soporte vigente, no una rama
+abandonada. Resultado: cero overrides, cero forks, regla de accesibilidad
+original y madura.
+
+Pendiente que el responsable humano lo traslade a Confluence.

@@ -1,13 +1,16 @@
 # Arquitectura de la app cliente — constitución del frontend
+
 Fuente de verdad: NEX-41 (pageId 46333985). Si algo aquí diverge, gana la página.
 
 ## Propósito y límite inviolable
+
 Define cómo se organiza la SPA y cómo fluyen los datos. Regla que nunca se rompe:
 el frontend NUNCA es responsable del enforcement. Toda validación en cliente es de
 experiencia (feedback temprano). Autorización, filtrado por tenant y acceso a
 documentos los garantiza el backend, fresco por request (ADR-006).
 
 ## Estructura por dominio (no por tipo de archivo)
+
 - Núcleo compartido (core/ o shared/): cliente HTTP, sesión/auth, sistema de
   diseño, tipos generados desde OpenAPI, hooks transversales.
 - Módulos de dominio (features/): uno por área (expediente, colaboradores,
@@ -19,6 +22,7 @@ documentos los garantiza el backend, fresco por request (ADR-006).
   juntas las piezas que cambian juntas.
 
 ## Capa de consumo de API — TRES niveles, de abajo hacia arriba
+
 1. Cliente HTTP central (UNO solo): punto único que inyecta `Authorization: Bearer`
    (ADR-007), fija la base URL por entorno y centraliza errores y detección de 401.
 2. Tipos generados desde OpenAPI con openapi-typescript. Dependen del contrato
@@ -31,6 +35,7 @@ REGLA DURA: ningún componente hace fetch por su cuenta saltándose el cliente
 central. Si ves un `fetch(...)` directo en un componente, está mal.
 
 ## Sesión y autenticación en el cliente
+
 - Token en almacenamiento del navegador (persiste entre recargas, ADR-007),
   encapsulado en UN módulo de sesión. Ningún componente lee el almacenamiento
   directamente.
@@ -45,6 +50,7 @@ central. Si ves un `fetch(...)` directo en un componente, está mal.
   seguridad: el backend siempre revalida.
 
 ## Dos superficies
+
 - Routing y layouts propios por superficie (React Router v7). Consola: densidad de
   información (tablas, captura). Portal: simplicidad, mobile-first, autoservicio.
 - Sistema de diseño compartido (mismos componentes base y tokens CSS); lo que
@@ -54,16 +60,19 @@ central. Si ves un `fetch(...)` directo en un componente, está mal.
   menores.
 
 ## Anti-XSS (detalle en security.md)
+
 El token es accesible a JS (ADR-007), así que el rigor anti-XSS es obligatorio:
 no renderizar HTML sin sanitizar, no volcar token/PII en logs/URLs, documentos
 sensibles solo por mecanismos del backend.
 
 ## Frontera con otros archivos
+
 - Gating de permisos: el mecanismo vive en permissions.md (NEX-9). Esta arquitectura
   solo dice DÓNDE viven los permisos (estado de sesión) y que se consultan de forma
   transversal.
 - Seguridad del cliente: detalle en security.md (ADR-007).
 
 ## Dependencia bloqueante
+
 NEX-12 (contrato de API, backend) bloquea los tipos reales y el detalle de auth.
 Se puede avanzar estructura, sistema de diseño, routing y sesión contra mocks.

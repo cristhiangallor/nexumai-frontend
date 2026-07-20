@@ -1,13 +1,16 @@
 # Stack tecnológico — constitución del frontend
+
 Fuente de verdad: ADR-008 (pageId 46432258). Si algo aquí diverge, gana la página.
 
 ## Propósito
+
 Fijar qué tecnologías se usan y, sobre todo, cuáles NO, para que el agente no
 introduzca dependencias alternativas "porque sí". Las versiones son de referencia
 (jul-2026) y se RECONFIRMAN contra doc oficial al fijar package.json: no fijar
 patches de memoria.
 
 ## Decisiones (usar esto)
+
 - Framework + build: React + Vite, modo SPA. Vite 8.x (bundler Rolldown; requiere
   Node 20.19+/22.12+). La app compila a ESTÁTICOS: no hay runtime Node en producción.
 - Lenguaje: TypeScript 6.x. Elección conservadora deliberada (ver "Decisiones
@@ -21,6 +24,7 @@ patches de memoria.
 - Tipos desde OpenAPI: openapi-typescript (solo tipos, zero-runtime).
 
 ## NO usar (y por qué)
+
 - NO Next.js: su ventaja (SSR/SSG/SEO) no aplica a una app interna tras login y
   añade un runtime Node junto al backend Java.
 - NO Vue/Angular/Svelte: el equipo tiene experiencia React.
@@ -34,14 +38,17 @@ patches de memoria.
   más adelante cuando madure. Reevaluar en su momento.
 
 ## Decisiones conscientes (no "corregir" sin ADR)
+
 - TS 6.x en vez de 7.0, y Base UI en vez de Radix, son elecciones deliberadas de
   estabilidad, no descuidos. Cambiarlas requiere una decisión registrada, no un
   ajuste silencioso del agente.
 
 ## Verificar al hacer scaffold
+
 Comando de creación de Vite y plantilla React+TS; compatibilidad de plugins con
 Rolldown; versiones exactas de cada paquete. Ver guía de scaffold (pageId 46727180).
 
 ## Abierto (no inventar)
+
 Gestor de paquetes (npm/pnpm), herramienta E2E, gestor de formularios, umbral de
 cobertura. Mientras no se decidan, no asumir uno.

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -129,7 +129,7 @@
   /* sidebar-border y sidebar-ring: no definidos en el manual, derivados de la base navy */
   --sidebar-border: color-mix(in oklch, #000d31 90%, white);
 
-  --sidebar-ring: color-mix(in oklch, #000d31 70%, white)
+  --sidebar-ring: color-mix(in oklch, #000d31 70%, white);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -309,8 +309,12 @@ code {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;}
+    @apply border-border outline-ring/50;
+  }
   body {
-    @apply bg-background text-foreground;}
+    @apply bg-background text-foreground;
+  }
   html {
-    @apply font-sans;}}
+    @apply font-sans;
+  }
+}

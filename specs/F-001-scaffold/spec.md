@@ -14,6 +14,7 @@
 > de oro de todos modos) y se formaliza la spec en paralelo.
 
 ## Qué
+
 Crear el proyecto base navegable del frontend en su repositorio, materializando
 el stack (ADR-008), la arquitectura (NEX-41) y el andamiaje SDD (ADR-009). Es el
 esqueleto sobre el que se construirán las features de la EPIC 2.
@@ -22,12 +23,15 @@ NO incluye: lógica de negocio, cliente HTTP real, tipos OpenAPI ni hooks de dat
 (dependen del contrato NEX-12).
 
 ## Por qué
+
 Sin proyecto base no hay dónde desarrollar. Además es la primera pieza que ejercita
 el andamiaje SDD y los estándares (NEX-42): sienta el precedente de cómo se trabaja
 en el repo.
 
 ## Criterios de aceptación
+
 Son los diez criterios de NEX-16 (detalle en la guía 46727180 §1):
+
 - Repo con Git, rama principal protegida y primer commit (Conventional Commits).
 - React + Vite (SPA) en TypeScript que arranca en local y compila a estáticos.
 - Tailwind CSS integrado y shadcn/ui sobre Base UI inicializado.
@@ -40,9 +44,11 @@ Son los diez criterios de NEX-16 (detalle en la guía 46727180 §1):
 - README.md con requisitos de entorno y cómo correr.
 
 ## Fuera de alcance
+
 Cliente HTTP real, tipos OpenAPI, hooks de datos, cualquier feature de producto,
 pipeline de 7 agentes SDD (diferido). Nada de la lista de guardrails del MVP.
 
 ## Dependencias
+
 Decisiones cerradas: ADR-008, NEX-41, NEX-42, NEX-9, NEX-14, ADR-009.
 No depende de NEX-12 (el scaffold no consume API todavía).

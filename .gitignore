@@ -1,0 +1,33 @@
+# Dependencias
+node_modules/
+
+# Build / artefactos
+dist/
+dist-ssr/
+build/
+coverage/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# SDD / agente — overrides personales
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Editor / SO
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

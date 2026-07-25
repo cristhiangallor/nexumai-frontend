@@ -9,7 +9,13 @@
 //  - PerfilResponse → EN MEMORIA, no se persiste. `nombre`/`correo` son PII y
 //    security.md prohíbe persistir PII en almacenamiento innecesario: el perfil se
 //    re-obtiene de `GET /me` con el token persistido, así que no hace falta guardarlo
-//    en disco. `permisos[]` (que consumirá NEX-51) vive aquí mientras dura la sesión.
+//    en disco. `permisos[]` (que consume NEX-51) vive aquí mientras dura la sesión.
+//
+// Reactividad (NEX-51 bloque 2): el módulo es OBSERVABLE vía `subscribe` (compatible
+// con `useSyncExternalStore`). Es ADITIVO: la API síncrona existente no cambia —
+// `core/http` sigue leyendo el token con `getToken()` de forma síncrona. Solo se
+// notifica a los suscriptores cuando cambia el PERFIL (setPerfil/clearSession), que
+// es lo que la UI observa para re-evaluar permisos.
 
 import type { PerfilResponse } from '@/core/api/contracts'
 
@@ -18,6 +24,27 @@ const TOKEN_KEY = 'nexum.token'
 
 /** Estado de sesión en memoria (perfil). Se pierde al recargar; se re-obtiene de /me. */
 let perfilEnMemoria: PerfilResponse | null = null
+
+/** Suscriptores a cambios de sesión (perfil). */
+const listeners = new Set<() => void>()
+
+/**
+ * Suscribe un listener a los cambios de sesión y devuelve la función para
+ * desuscribir. Firma compatible con `useSyncExternalStore` (React).
+ */
+export function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+/** Notifica a los suscriptores que la sesión cambió. */
+function emitChange(): void {
+  for (const listener of listeners) {
+    listener()
+  }
+}
 
 /** Guarda el token de sesión. */
 export function setToken(token: string): void {
@@ -29,18 +56,23 @@ export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
 
-/** Guarda el perfil (`PerfilResponse` de `GET /me`) en el estado de sesión. */
+/** Guarda el perfil (`PerfilResponse` de `GET /me`) y notifica a los suscriptores. */
 export function setPerfil(perfil: PerfilResponse): void {
   perfilEnMemoria = perfil
+  emitChange()
 }
 
-/** Lee el perfil de la sesión, o `null` si aún no se ha cargado `GET /me`. */
+/**
+ * Lee el perfil de la sesión, o `null` si aún no se ha cargado `GET /me`.
+ * La referencia solo cambia al mutar la sesión, por lo que sirve de snapshot estable.
+ */
 export function getPerfil(): PerfilResponse | null {
   return perfilEnMemoria
 }
 
-/** Limpia toda la sesión local: token y perfil. Backend invalida por su lado. */
+/** Limpia toda la sesión local (token y perfil) y notifica a los suscriptores. */
 export function clearSession(): void {
   localStorage.removeItem(TOKEN_KEY)
   perfilEnMemoria = null
+  emitChange()
 }

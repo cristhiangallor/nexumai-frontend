@@ -4,4 +4,5 @@ export {
   getToken,
   setPerfil,
   setToken,
+  subscribe,
 } from './session'

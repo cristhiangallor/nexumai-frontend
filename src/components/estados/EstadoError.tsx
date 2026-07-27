@@ -1,5 +1,7 @@
 import { TriangleAlert } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+
 interface EstadoErrorProps {
   /** Mensaje HUMANO (nunca el error técnico crudo). */
   mensaje?: string
@@ -27,13 +29,9 @@ export function EstadoError({ mensaje, onReintentar }: EstadoErrorProps) {
           'Ocurrió un error al cargar la información. Inténtalo de nuevo.'}
       </p>
       {onReintentar && (
-        <button
-          type="button"
-          onClick={onReintentar}
-          className="rounded-md border border-danger-text/30 px-4 py-2 text-sm font-medium text-danger-text hover:bg-danger-text/10"
-        >
+        <Button type="button" variant="secondary" onClick={onReintentar}>
           Reintentar
-        </button>
+        </Button>
       )}
     </div>
   )

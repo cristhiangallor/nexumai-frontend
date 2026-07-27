@@ -1,5 +1,7 @@
 import { Inbox, SearchX } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+
 interface AccionEstado {
   etiqueta: string
   onAccionar: () => void
@@ -64,13 +66,14 @@ export function EstadoVacio({
         </p>
       </div>
       {accion && (
-        <button
+        <Button
           type="button"
+          variant="default"
           onClick={accion.onAccionar}
-          className="mt-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover"
+          className="mt-1"
         >
           {accion.etiqueta}
-        </button>
+        </Button>
       )}
     </div>
   )

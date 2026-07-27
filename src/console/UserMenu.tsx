@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { getPerfil } from '@/core/session'
 import { useLogout } from '@/features/auth/useLogout'
 
@@ -51,12 +52,13 @@ export function UserMenu() {
 
   return (
     <div ref={contenedorRef} className="relative">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         aria-expanded={abierto}
         aria-controls="user-menu-panel"
         onClick={() => setAbierto((valor) => !valor)}
-        className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent"
+        className="h-auto gap-2 px-2 py-1"
       >
         <span
           aria-hidden="true"
@@ -72,7 +74,7 @@ export function UserMenu() {
             {perfil.rol ?? '—'}
           </span>
         </span>
-      </button>
+      </Button>
 
       {abierto && (
         <div
@@ -81,14 +83,15 @@ export function UserMenu() {
         >
           {/* Cierre de sesión (NEX-44): dispara el servicio `useLogout`. Estado de
               carga en la propia acción (deshabilitada + texto), sin doble disparo. */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={cerrarSesion}
             disabled={cerrandoSesion}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-foreground hover:bg-accent disabled:opacity-60"
+            className="w-full justify-start"
           >
             {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
-          </button>
+          </Button>
         </div>
       )}
     </div>

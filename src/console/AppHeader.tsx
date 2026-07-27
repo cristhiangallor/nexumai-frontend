@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+
 import { Breadcrumb } from './Breadcrumb'
 import { UserMenu } from './UserMenu'
 
@@ -63,26 +65,30 @@ export function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={onToggleDrawer}
         aria-expanded={drawerAbierto}
         aria-controls="app-sidebar"
         aria-label={drawerAbierto ? 'Cerrar menú' : 'Abrir menú'}
-        className="inline-flex rounded-md p-2 text-foreground hover:bg-accent md:hidden"
+        className="md:hidden"
       >
         <IconoMenu />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={onToggleColapso}
         aria-expanded={!colapsado}
         aria-controls="app-sidebar"
         aria-label={colapsado ? 'Expandir menú' : 'Colapsar menú'}
-        className="hidden rounded-md p-2 text-foreground hover:bg-accent md:inline-flex"
+        className="hidden md:inline-flex"
       >
         <IconoColapso />
-      </button>
+      </Button>
 
       <Breadcrumb />
 

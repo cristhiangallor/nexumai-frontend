@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
+import { Button } from '@/components/ui/button'
 import { ApiError } from '@/core/http'
 import { setSlug } from '@/core/session'
 
@@ -163,13 +164,14 @@ export function LoginPage() {
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="default"
             disabled={login.isPending}
-            className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full"
           >
             {login.isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
-          </button>
+          </Button>
         </form>
       </div>
     </main>

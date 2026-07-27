@@ -4,7 +4,7 @@ import { AppShell } from './console/AppShell'
 import { ConsoleHome } from './console/ConsoleHome'
 import { ConsoleLayout } from './console/ConsoleLayout'
 import { RutaProtegida } from './core/permissions'
-import { getToken } from './core/session'
+import { getToken, RequiereSesion } from './core/session'
 import { LoginPage } from './features/auth/LoginPage'
 import { PerfilPage } from './features/perfil/PerfilPage'
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
@@ -38,9 +38,14 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    // AppShell de la consola (F-004): marco de tres zonas. Reemplaza el LayoutApp
-    // provisional de F-003 preservando su menú/gating (vía Sidebar → MenuNavegacion).
-    element: <AppShell />,
+    // AppShell de la consola (F-004), envuelto por el guard de SESIÓN (NEX-61): sin
+    // sesión, ninguna ruta interna se renderiza y se redirige al login del tenant.
+    // Reemplaza el LayoutApp provisional de F-003 preservando su menú/gating.
+    element: (
+      <RequiereSesion>
+        <AppShell />
+      </RequiereSesion>
+    ),
     children: [
       {
         // Destino autenticado tras el login (F-002), ahora dentro del AppShell.

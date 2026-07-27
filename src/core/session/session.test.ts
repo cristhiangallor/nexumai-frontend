@@ -4,8 +4,10 @@ import type { PerfilResponse } from '@/core/api/contracts'
 import {
   clearSession,
   getPerfil,
+  getSlug,
   getToken,
   setPerfil,
+  setSlug,
   setToken,
 } from '@/core/session'
 
@@ -76,5 +78,28 @@ describe('módulo de sesión — clearSession', () => {
     expect(getToken()).toBeNull()
     expect(getPerfil()).toBeNull()
     expect(localStorage.getItem('nexum.token')).toBeNull()
+  })
+})
+
+describe('módulo de sesión — slug del tenant', () => {
+  it('devuelve null cuando no hay slug', () => {
+    expect(getSlug()).toBeNull()
+  })
+
+  it('guarda y lee el slug', () => {
+    setSlug('acme')
+    expect(getSlug()).toBe('acme')
+  })
+
+  it('clearSession también borra el slug (no deja rastro del tenant)', () => {
+    setToken('token-abc')
+    setSlug('acme')
+    setPerfil(perfilDemo)
+
+    clearSession()
+
+    expect(getToken()).toBeNull()
+    expect(getSlug()).toBeNull()
+    expect(getPerfil()).toBeNull()
   })
 })

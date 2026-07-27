@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 
 import { ApiError } from '@/core/http'
+import { setSlug } from '@/core/session'
 
 import { useLogin } from './useLogin'
 
@@ -37,7 +38,15 @@ export function LoginPage() {
   // 401 genérico que cualquier credencial inválida.
   const { slug = '' } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const login = useLogin()
+
+  // Aviso NO bloqueante tras un cierre de sesión que no pudo confirmarse con el
+  // servidor (NEX-44): la pantalla lo recibe por `location.state`.
+  const avisoCierreSesion = Boolean(
+    (location.state as { avisoCierreSesion?: boolean } | null)
+      ?.avisoCierreSesion,
+  )
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -69,7 +78,13 @@ export function LoginPage() {
     }
     login.mutate(
       { slug, email, password },
-      { onSuccess: () => navigate(DESTINO_TRAS_LOGIN, { replace: true }) },
+      {
+        onSuccess: () => {
+          // Persistir el slug del tenant para el cierre de sesión (NEX-44).
+          setSlug(slug)
+          navigate(DESTINO_TRAS_LOGIN, { replace: true })
+        },
+      },
     )
   }
 
@@ -80,6 +95,15 @@ export function LoginPage() {
           Iniciar sesión
         </h1>
 
+        {avisoCierreSesion && (
+          <p
+            role="status"
+            className="mb-4 rounded-md bg-warning-soft px-3 py-2 text-sm text-warning-text"
+          >
+            Cerramos tu sesión en este dispositivo, pero no pudimos confirmarlo
+            con el servidor.
+          </p>
+        )}
         {login.isError && (
           <p
             role="alert"

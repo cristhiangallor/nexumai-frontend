@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getPerfil, getToken } from '@/core/session'
+import { getPerfil, getSlug, getToken } from '@/core/session'
 
 import { LoginPage } from './LoginPage'
 
@@ -190,6 +190,8 @@ describe('LoginPage — flujo de éxito', () => {
     // Sesión guardada por el módulo de sesión.
     expect(getToken()).toBe('token-abc')
     expect(getPerfil()).toEqual(perfilDemo)
+    // El slug del tenant se persiste para el cierre de sesión (NEX-44).
+    expect(getSlug()).toBe('acme')
   })
 
   it('si /me falla tras el login, limpia la sesión y no redirige', async () => {
@@ -206,5 +208,37 @@ describe('LoginPage — flujo de éxito', () => {
     expect(screen.queryByText('Destino provisional tras login')).toBeNull()
     expect(getToken()).toBeNull()
     expect(getPerfil()).toBeNull()
+  })
+})
+
+describe('LoginPage — aviso de cierre de sesión (NEX-44)', () => {
+  it('muestra el aviso no bloqueante al llegar por logout (location.state)', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter
+          initialEntries={[
+            { pathname: '/acme/login', state: { avisoCierreSesion: true } },
+          ]}
+        >
+          <Routes>
+            <Route path="/:slug/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    const aviso = screen.getByRole('status')
+    expect(aviso).toHaveTextContent(/cerramos tu sesión en este dispositivo/i)
+    // No bloquea: el formulario sigue disponible.
+    expect(screen.getByLabelText('Correo')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Iniciar sesión' }),
+    ).toBeInTheDocument()
   })
 })

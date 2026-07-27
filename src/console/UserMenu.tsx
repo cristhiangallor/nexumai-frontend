@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { getPerfil } from '@/core/session'
+import { useLogout } from '@/features/auth/useLogout'
 
 /**
  * Menú de usuario del header (ADR-014): avatar (iniciales) + nombre + rol leídos de la
@@ -15,6 +16,7 @@ export function UserMenu() {
   const perfil = getPerfil()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef<HTMLDivElement>(null)
+  const { cerrarSesion, cerrandoSesion } = useLogout()
 
   useEffect(() => {
     if (!abierto) {
@@ -77,14 +79,15 @@ export function UserMenu() {
           id="user-menu-panel"
           className="absolute right-0 z-50 mt-1 w-48 rounded-md border border-border bg-popover p-1 shadow"
         >
-          {/* TODO(NEX-44): "Cerrar sesión" es ESTRUCTURA / placeholder consciente. La
-              lógica (POST /logout → limpiar sesión → redirigir, con carga/error) es
-              NEX-44. No cablear aquí. */}
+          {/* Cierre de sesión (NEX-44): dispara el servicio `useLogout`. Estado de
+              carga en la propia acción (deshabilitada + texto), sin doble disparo. */}
           <button
             type="button"
-            className="block w-full rounded px-3 py-2 text-left text-sm text-foreground hover:bg-accent"
+            onClick={cerrarSesion}
+            disabled={cerrandoSesion}
+            className="block w-full rounded px-3 py-2 text-left text-sm text-foreground hover:bg-accent disabled:opacity-60"
           >
-            Cerrar sesión
+            {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
           </button>
         </div>
       )}

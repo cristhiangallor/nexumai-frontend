@@ -22,6 +22,14 @@ import type { PerfilResponse } from '@/core/api/contracts'
 /** Clave de `localStorage` del token. Prefijo de namespace para no colisionar. */
 const TOKEN_KEY = 'nexum.token'
 
+/**
+ * Clave de `localStorage` del slug del tenant. Se persiste (como el token) para que el
+ * cierre de sesión (NEX-44) pueda redirigir a `/{slug}/login` conservando el tenant.
+ * NO es PII (es el identificador de tenant que ya viaja en la URL), así que persistirlo
+ * es consistente con la política — a diferencia del perfil, que sí es PII y va en memoria.
+ */
+const SLUG_KEY = 'nexum.slug'
+
 /** Estado de sesión en memoria (perfil). Se pierde al recargar; se re-obtiene de /me. */
 let perfilEnMemoria: PerfilResponse | null = null
 
@@ -56,6 +64,19 @@ export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+/** Guarda el slug del tenant de la sesión actual (lo puebla el login). */
+export function setSlug(slug: string): void {
+  localStorage.setItem(SLUG_KEY, slug)
+}
+
+/**
+ * Lee el slug del tenant, o `null` si no hay (sesión anterior a NEX-44 o almacenamiento
+ * manipulado). El consumidor decide el fallback (p. ej. redirigir a `/`).
+ */
+export function getSlug(): string | null {
+  return localStorage.getItem(SLUG_KEY)
+}
+
 /** Guarda el perfil (`PerfilResponse` de `GET /me`) y notifica a los suscriptores. */
 export function setPerfil(perfil: PerfilResponse): void {
   perfilEnMemoria = perfil
@@ -70,9 +91,13 @@ export function getPerfil(): PerfilResponse | null {
   return perfilEnMemoria
 }
 
-/** Limpia toda la sesión local (token y perfil) y notifica a los suscriptores. */
+/**
+ * Limpia toda la sesión local (token, slug y perfil) y notifica a los suscriptores.
+ * Es idempotente. No deja rastro del tenant al salir (NEX-44).
+ */
 export function clearSession(): void {
   localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(SLUG_KEY)
   perfilEnMemoria = null
   emitChange()
 }

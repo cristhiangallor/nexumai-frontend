@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import type { PerfilResponse } from '@/core/api'
@@ -18,6 +19,14 @@ function perfilCon(nombre: string, rol: string | null): PerfilResponse {
   }
 }
 
+// UserMenu usa useLogout → useNavigate, así que necesita contexto de router.
+function montarUserMenu() {
+  const router = createMemoryRouter([{ path: '/', element: <UserMenu /> }], {
+    initialEntries: ['/'],
+  })
+  return render(<RouterProvider router={router} />)
+}
+
 afterEach(() => {
   clearSession()
 })
@@ -26,18 +35,17 @@ describe('UserMenu', () => {
   it('muestra nombre y rol de la sesión', () => {
     setPerfil(perfilCon('Ana López', 'RRHH'))
 
-    render(<UserMenu />)
+    montarUserMenu()
 
     expect(screen.getByText('Ana López')).toBeInTheDocument()
     expect(screen.getByText('RRHH')).toBeInTheDocument()
   })
 
-  it('revela el ítem "Cerrar sesión" (placeholder) al abrir el menú', () => {
+  it('revela el ítem "Cerrar sesión" al abrir el menú', () => {
     setPerfil(perfilCon('Ana López', 'RRHH'))
 
-    render(<UserMenu />)
+    montarUserMenu()
 
-    // Cerrado: el disparador expone aria-expanded=false y el ítem no está.
     const disparador = screen.getByRole('button', { name: /Ana López/ })
     expect(disparador).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull()
@@ -51,7 +59,7 @@ describe('UserMenu', () => {
   })
 
   it('no renderiza nada sin sesión', () => {
-    const { container } = render(<UserMenu />)
+    const { container } = montarUserMenu()
 
     expect(container).toBeEmptyDOMElement()
   })

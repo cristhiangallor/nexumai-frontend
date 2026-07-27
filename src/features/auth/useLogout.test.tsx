@@ -8,6 +8,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerfilResponse } from '@/core/api'
+import { setUnauthorizedHandler } from '@/core/http'
 import { RutaProtegida } from '@/core/permissions'
 import {
   clearSession,
@@ -88,6 +89,7 @@ beforeEach(() => {
 
 afterEach(() => {
   clearSession()
+  setUnauthorizedHandler(null)
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
@@ -223,5 +225,23 @@ describe('useLogout — flujo de cierre de sesión', () => {
       screen.getByRole('heading', { name: 'Acceso denegado' }),
     ).toBeInTheDocument()
     expect(screen.queryByText('contenido privado')).toBeNull()
+  })
+
+  it('un 401 voluntario NO dispara el handler global (skip) ni doble redirección', async () => {
+    setToken('token-abc')
+    setSlug('acme')
+    setPerfil(perfilCon(['usuario.ver_propio']))
+    const handlerGlobal = vi.fn()
+    setUnauthorizedHandler(handlerGlobal)
+    fetchMock.mockResolvedValue(mockResponse(401))
+
+    montar()
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+
+    // Redirige una sola vez a /:slug/login; el skip evitó el handler global de
+    // sesión expirada.
+    expect(await screen.findByText('login de acme')).toBeInTheDocument()
+    expect(handlerGlobal).not.toHaveBeenCalled()
+    expect(getToken()).toBeNull()
   })
 })

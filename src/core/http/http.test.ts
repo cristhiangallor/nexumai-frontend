@@ -7,7 +7,13 @@ import {
   request,
   setUnauthorizedHandler,
 } from '@/core/http'
-import { clearSession, getToken, setToken } from '@/core/session'
+import {
+  clearSession,
+  getSlug,
+  getToken,
+  setSlug,
+  setToken,
+} from '@/core/session'
 
 /** Construye una respuesta mínima con la forma que usa el cliente HTTP. */
 function mockResponse(
@@ -167,5 +173,37 @@ describe('cliente HTTP — manejo de 401', () => {
 
     expect(getToken()).toBe('token-previo') // sesión intacta
     expect(onUnauthorized).not.toHaveBeenCalled()
+  })
+})
+
+describe('cliente HTTP — handler global de 401 (NEX-62)', () => {
+  it('pasa al handler el slug capturado ANTES de limpiar la sesión', async () => {
+    setToken('token-abc')
+    setSlug('acme')
+    const handler = vi.fn()
+    setUnauthorizedHandler(handler)
+    fetchMock.mockResolvedValue(mockResponse(401))
+
+    await expect(apiGet('/me')).rejects.toMatchObject({ status: 401 })
+
+    // El handler recibe el slug previo aunque clearSession ya lo haya borrado.
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler).toHaveBeenCalledWith('acme')
+    expect(getSlug()).toBeNull()
+  })
+
+  it('con skipUnauthorizedHandler: NO llama al handler, pero limpia y lanza 401', async () => {
+    setToken('token-abc')
+    setSlug('acme')
+    const handler = vi.fn()
+    setUnauthorizedHandler(handler)
+    fetchMock.mockResolvedValue(mockResponse(401))
+
+    await expect(
+      apiGet('/me', { skipUnauthorizedHandler: true }),
+    ).rejects.toMatchObject({ status: 401 })
+
+    expect(handler).not.toHaveBeenCalled()
+    expect(getToken()).toBeNull() // se limpió igual
   })
 })

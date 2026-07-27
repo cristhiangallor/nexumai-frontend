@@ -8,7 +8,7 @@
 //  - Centralizar el manejo de `401` en peticiones autenticadas: limpia la sesión y
 //    dispara el punto de integración de redirección a login.
 
-import { clearSession, getToken } from '@/core/session'
+import { clearSession, getSlug, getToken } from '@/core/session'
 
 /** Error de una respuesta HTTP no exitosa. El backend responde sin envelope. */
 export class ApiError extends Error {
@@ -22,14 +22,17 @@ export class ApiError extends Error {
 }
 
 /**
- * Manejador de `401` en peticiones autenticadas (sesión expirada/invalidada).
- * La redirección concreta a `/{slug}/login` es un punto de integración: se conecta
- * cuando exista el router guard (NEX-51). Por defecto no hay redirección.
+ * Manejador global de `401` en peticiones autenticadas (sesión expirada/invalidada).
+ * Recibe el `slug` del tenant capturado ANTES de limpiar la sesión, para poder
+ * redirigir a `/{slug}/login`. Se registra en el arranque (NEX-62). Por defecto no
+ * hay handler.
  */
-let onUnauthorized: (() => void) | null = null
+let onUnauthorized: ((slug: string | null) => void) | null = null
 
-/** Registra (o limpia con `null`) el manejador de `401` autenticado. */
-export function setUnauthorizedHandler(handler: (() => void) | null): void {
+/** Registra (o limpia con `null`) el manejador global de `401` autenticado. */
+export function setUnauthorizedHandler(
+  handler: ((slug: string | null) => void) | null,
+): void {
   onUnauthorized = handler
 }
 
@@ -46,6 +49,13 @@ export interface RequestOptions {
    * `ApiError` sin tocar la sesión ni redirigir.
    */
   auth?: boolean
+  /**
+   * `true`: omite SOLO la llamada al handler global de 401 (`onUnauthorized`) en esta
+   * petición. `clearSession` se mantiene (idempotente) y el `ApiError(401)` se sigue
+   * lanzando. Lo usa el logout voluntario (NEX-62): un 401 ahí es el resultado buscado,
+   * no una sesión expirada, así que NO debe disparar el aviso/redirección global.
+   */
+  skipUnauthorizedHandler?: boolean
   signal?: AbortSignal
 }
 
@@ -57,7 +67,14 @@ export async function request<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, auth = true, signal } = options
+  const {
+    method = 'GET',
+    body,
+    headers = {},
+    auth = true,
+    skipUnauthorizedHandler = false,
+    signal,
+  } = options
 
   // Leída por petición (no en carga de módulo) para reflejar el entorno en runtime.
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -86,9 +103,15 @@ export async function request<T>(
   })
 
   if (response.status === 401 && auth) {
-    // Sesión expirada/invalidada en una petición autenticada: limpia y avisa.
+    // Sesión expirada/invalidada en una petición autenticada. Capturar el slug ANTES
+    // de limpiar (clearSession lo borra) para que el handler pueda redirigir al login
+    // del tenant. El logout voluntario pasa `skipUnauthorizedHandler`: un 401 ahí es el
+    // resultado buscado, no una sesión expirada.
+    const slugPrevio = getSlug()
     clearSession()
-    onUnauthorized?.()
+    if (!skipUnauthorizedHandler) {
+      onUnauthorized?.(slugPrevio)
+    }
   }
 
   if (!response.ok) {

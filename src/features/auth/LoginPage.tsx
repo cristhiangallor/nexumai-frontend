@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
+import { Button } from '@/components/ui/button'
 import { ApiError } from '@/core/http'
 import { setSlug } from '@/core/session'
 
@@ -41,12 +42,16 @@ export function LoginPage() {
   const location = useLocation()
   const login = useLogin()
 
-  // Aviso NO bloqueante tras un cierre de sesión que no pudo confirmarse con el
-  // servidor (NEX-44): la pantalla lo recibe por `location.state`.
-  const avisoCierreSesion = Boolean(
-    (location.state as { avisoCierreSesion?: boolean } | null)
-      ?.avisoCierreSesion,
-  )
+  // Avisos NO bloqueantes que la pantalla recibe por `location.state`:
+  //  - cierre de sesión que no pudo confirmarse con el servidor (F-005), y
+  //  - sesión expirada/invalidada por un 401 inesperado (NEX-62).
+  // Son mensajes distintos y con tono distinto (warning vs. info).
+  const estadoNavegacion = location.state as {
+    avisoCierreSesion?: boolean
+    avisoSesionExpirada?: boolean
+  } | null
+  const avisoCierreSesion = Boolean(estadoNavegacion?.avisoCierreSesion)
+  const avisoSesionExpirada = Boolean(estadoNavegacion?.avisoSesionExpirada)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -95,6 +100,14 @@ export function LoginPage() {
           Iniciar sesión
         </h1>
 
+        {avisoSesionExpirada && (
+          <p
+            role="status"
+            className="mb-4 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
+          >
+            Tu sesión expiró. Inicia sesión de nuevo.
+          </p>
+        )}
         {avisoCierreSesion && (
           <p
             role="status"
@@ -163,13 +176,14 @@ export function LoginPage() {
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="default"
             disabled={login.isPending}
-            className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full"
           >
             {login.isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
-          </button>
+          </Button>
         </form>
       </div>
     </main>

@@ -242,3 +242,33 @@ describe('LoginPage — aviso de cierre de sesión (NEX-44)', () => {
     ).toBeInTheDocument()
   })
 })
+
+describe('LoginPage — aviso de sesión expirada (NEX-62)', () => {
+  it('muestra el aviso de sesión expirada, distinto del de logout', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter
+          initialEntries={[
+            { pathname: '/acme/login', state: { avisoSesionExpirada: true } },
+          ]}
+        >
+          <Routes>
+            <Route path="/:slug/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(/tu sesión expiró/i)
+    // NO es el aviso de logout degradado de F-005.
+    expect(
+      screen.queryByText(/no pudimos confirmarlo con el servidor/i),
+    ).toBeNull()
+  })
+})

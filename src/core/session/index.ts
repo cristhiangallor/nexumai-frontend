@@ -8,3 +8,4 @@ export {
   setToken,
   subscribe,
 } from './session'
+export { RequiereSesion } from './RequiereSesion'

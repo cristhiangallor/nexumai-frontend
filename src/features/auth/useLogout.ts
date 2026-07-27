@@ -18,8 +18,10 @@ export interface EstadoAvisoCierreSesion {
  *    caminos (200, 401, red/5xx).
  *  - `200` → limpiar, redirigir, sin mensaje.
  *  - `401` → NO es error: significa que la sesión ya no existe en backend, que es el
- *    resultado buscado. Limpiar, redirigir, sin mensaje. (El cliente HTTP ya limpia la
- *    sesión ante un 401 autenticado; volver a limpiar es idempotente.)
+ *    resultado buscado. Limpiar, redirigir, sin mensaje. La petición pasa
+ *    `skipUnauthorizedHandler` (NEX-62) para que ese 401 NO dispare el handler global
+ *    de sesión expirada (evita doble redirección y el aviso equivocado). El cliente
+ *    HTTP igual limpia la sesión; volver a limpiar es idempotente.
  *  - red/timeout/5xx → limpiar, redirigir y emitir aviso NO bloqueante.
  *  - Sin reintento (tras salir no queda pantalla donde reintentar).
  *
@@ -49,7 +51,9 @@ export function useLogout() {
     let huboFalloDeRed = false
     try {
       // `POST /logout` sin cuerpo; autenticado (el cliente HTTP inyecta el Bearer).
-      await apiPost('/logout')
+      // `skipUnauthorizedHandler`: un 401 aquí es el resultado buscado, no una sesión
+      // expirada → no debe disparar el handler global (NEX-62).
+      await apiPost('/logout', undefined, { skipUnauthorizedHandler: true })
     } catch (error) {
       // Un 401 es el resultado buscado (sesión ya invalidada): no se avisa. Cualquier
       // otro fallo (red/timeout/5xx) sí se avisa.

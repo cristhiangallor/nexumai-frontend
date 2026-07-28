@@ -13,6 +13,8 @@
 //  - "Superadmin Nexum" opera dentro de un tenant: NO ofrecer "cambiar de tenant".
 //  - Alcance "equipo" del Aprobador = un nivel (`jefe_directo_id`), no multinivel.
 
+import { RUTAS } from '@/rutas'
+
 /** Entrada del menú dirigido por permisos. */
 export interface EntradaMenu {
   /** Texto visible (es-MX). */
@@ -29,6 +31,6 @@ export interface EntradaMenu {
  * `GET /me`). Crecerá con los módulos de EPIC 3+.
  */
 export const catalogoMenu: EntradaMenu[] = [
-  { etiqueta: 'Inicio', ruta: '/inicio', permiso: 'usuario.ver_propio' },
-  { etiqueta: 'Mi perfil', ruta: '/perfil', permiso: 'usuario.ver_propio' },
+  { etiqueta: 'Inicio', ruta: RUTAS.inicio, permiso: 'usuario.ver_propio' },
+  { etiqueta: 'Mi perfil', ruta: RUTAS.perfil, permiso: 'usuario.ver_propio' },
 ]

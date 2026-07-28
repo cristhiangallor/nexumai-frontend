@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router'
 import { setUnauthorizedHandler } from './core/http'
 import './index.css'
 import { router } from './router.tsx'
+import { RUTAS, rutaLogin } from './rutas'
 
 // Cliente de TanStack Query (estado de servidor). Único a nivel de app.
 const queryClient = new QueryClient()
@@ -17,7 +18,7 @@ const queryClient = new QueryClient()
 //  - el aviso de logout degradado de F-005 ("no pudimos confirmarlo con el servidor").
 // El logout voluntario NO pasa por aquí (usa `skipUnauthorizedHandler`).
 setUnauthorizedHandler((slug) => {
-  router.navigate(slug ? `/${slug}/login` : '/', {
+  router.navigate(slug ? rutaLogin(slug) : RUTAS.raiz, {
     replace: true,
     state: { avisoSesionExpirada: true },
   })

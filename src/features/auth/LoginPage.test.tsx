@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getPerfil, getSlug, getToken } from '@/core/session'
+import { RUTAS } from '@/rutas'
 
 import { LoginPage } from './LoginPage'
 
@@ -38,7 +39,7 @@ function renderLogin(ruta = '/acme/login') {
         <Routes>
           <Route path="/:slug/login" element={<LoginPage />} />
           <Route
-            path="/inicio"
+            path={RUTAS.inicio}
             element={<p>Destino provisional tras login</p>}
           />
         </Routes>

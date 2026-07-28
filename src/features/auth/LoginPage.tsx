@@ -4,13 +4,14 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/core/http'
 import { setSlug } from '@/core/session'
+import { RUTAS } from '@/rutas'
 
 import { useLogin } from './useLogin'
 
 // TODO(NEX-51/dashboard): destino autenticado provisional. Reemplazar por
 // enrutamiento por rol/superficie cuando exista el dashboard; ver la landing
 // provisional de "/" en F-001. Aquí NO se decide consola-vs-portal por permisos.
-const DESTINO_TRAS_LOGIN = '/inicio'
+const DESTINO_TRAS_LOGIN = RUTAS.inicio
 
 // Validación de EXPERIENCIA (formato de correo), no de seguridad: solo da feedback
 // temprano. El backend es el único que valida de verdad.

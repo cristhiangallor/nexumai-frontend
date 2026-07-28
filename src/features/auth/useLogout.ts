@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 
 import { ApiError, apiPost } from '@/core/http'
 import { clearSession, getSlug } from '@/core/session'
+import { RUTAS, rutaLogin } from '@/rutas'
 
 /** Indicador que la pantalla de login lee de `location.state` para mostrar el aviso. */
 export interface EstadoAvisoCierreSesion {
@@ -65,8 +66,8 @@ export function useLogout() {
       clearSession()
     }
 
-    // Redirección conservando el slug; sin slug → `/` (sin fallar).
-    const destino = slug ? `/${slug}/login` : '/'
+    // Redirección conservando el slug; sin slug → `/` (sin fallar). Paths centralizados.
+    const destino = slug ? rutaLogin(slug) : RUTAS.raiz
     navigate(destino, {
       replace: true,
       state: huboFalloDeRed

@@ -1,6 +1,8 @@
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { Navigate } from 'react-router'
 
+import { RUTAS, rutaLogin } from '@/rutas'
+
 import { getSlug, getToken, subscribe } from './session'
 
 interface RequiereSesionProps {
@@ -34,7 +36,8 @@ export function RequiereSesion({ children }: RequiereSesionProps) {
 
   if (!haySesion) {
     const slug = getSlug()
-    return <Navigate to={slug ? `/${slug}/login` : '/'} replace />
+    // Paths centralizados (ADR-015): solo cambia el origen del literal, no la lógica.
+    return <Navigate to={slug ? rutaLogin(slug) : RUTAS.raiz} replace />
   }
 
   return <>{children}</>

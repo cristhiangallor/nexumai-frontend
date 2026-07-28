@@ -3,6 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { clearSession, setToken } from '@/core/session'
+import { RUTAS } from '@/rutas'
 
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
 import { redirigirSegunSesion } from './router'
@@ -19,14 +20,14 @@ function routerDePrueba(inicial: string) {
         loader: redirigirSegunSesion,
         element: <LandingPublicaPlaceholder />,
       },
-      { path: '/inicio', element: <p>estoy en inicio</p> },
+      { path: RUTAS.inicio, element: <p>estoy en inicio</p> },
     ],
     { initialEntries: [inicial] },
   )
 }
 
 describe('convergencia de rutas — redirigirSegunSesion (/)', () => {
-  it('con sesión (token) redirige a /inicio', () => {
+  it('con sesión (token) redirige a /console/inicio', () => {
     setToken('token-abc')
 
     const resultado = redirigirSegunSesion()
@@ -34,7 +35,7 @@ describe('convergencia de rutas — redirigirSegunSesion (/)', () => {
     expect(resultado).toBeInstanceOf(Response)
     const respuesta = resultado as Response
     expect(respuesta.status).toBe(302)
-    expect(respuesta.headers.get('Location')).toBe('/inicio')
+    expect(respuesta.headers.get('Location')).toBe(RUTAS.inicio)
   })
 
   it('sin sesión no redirige (renderiza el placeholder)', () => {
@@ -55,7 +56,7 @@ describe('convergencia de rutas — integración de "/"', () => {
     expect(screen.queryByRole('link', { name: 'Consola (RRHH)' })).toBeNull()
   })
 
-  it('con sesión, "/" redirige a /inicio', async () => {
+  it('con sesión, "/" redirige a /console/inicio', async () => {
     setToken('token-abc')
 
     render(<RouterProvider router={routerDePrueba('/')} />)

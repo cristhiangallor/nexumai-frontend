@@ -1,46 +1,43 @@
 import { createBrowserRouter, redirect } from 'react-router'
 
 import { AppShell } from './console/AppShell'
-import { ConsoleHome } from './console/ConsoleHome'
-import { ConsoleLayout } from './console/ConsoleLayout'
 import { RutaProtegida } from './core/permissions'
 import { getToken, RequiereSesion } from './core/session'
 import { LoginPage } from './features/auth/LoginPage'
 import { PerfilPage } from './features/perfil/PerfilPage'
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
-import { PortalHome } from './portal/PortalHome'
-import { PortalLayout } from './portal/PortalLayout'
 import { PostLoginPlaceholder } from './PostLoginPlaceholder'
+import { PATRON_LOGIN, RUTAS, SEGMENTOS } from './rutas'
 
 /**
  * Convergencia de rutas de `/` (F-004): decide a dónde cae la raíz según la sesión.
- * Con token → `/inicio` (cierra el lado con-sesión del TODO de F-002). Sin token →
- * `null` (renderiza el `element`, la landing pública).
+ * Con token → `RUTAS.inicio` (dentro de la consola). Sin token → `null` (renderiza la
+ * landing pública). Paths centralizados en `rutas.ts` (ADR-015).
  *
  * Decisión de producto (2026-07-25): "/" es territorio PÚBLICO; como el login es
- * tenant-scoped (`/:slug/login`), "/" no redirige a login sin slug. Sin sesión se
- * muestra la landing pública (por ahora, placeholder consciente).
+ * tenant-scoped, "/" no redirige a login sin slug. Sin sesión → landing pública.
  */
 export function redirigirSegunSesion() {
-  return getToken() ? redirect('/inicio') : null
+  return getToken() ? redirect(RUTAS.inicio) : null
 }
 
 export const router = createBrowserRouter([
   {
     path: '/',
     loader: redirigirSegunSesion,
-    // Con sesión el loader redirige a /inicio; sin sesión, landing pública (placeholder).
     element: <LandingPublicaPlaceholder />,
   },
   {
-    // Ruta paramétrica: el `slug` (tenant) se lee con `useParams` en LoginPage.
-    path: '/:slug/login',
+    // Único path con `:slug` (tenant). El slug se lee con `useParams` en LoginPage.
+    path: PATRON_LOGIN,
     element: <LoginPage />,
   },
   {
-    // AppShell de la consola (F-004), envuelto por el guard de SESIÓN (NEX-61): sin
-    // sesión, ninguna ruta interna se renderiza y se redirige al login del tenant.
-    // Reemplaza el LayoutApp provisional de F-003 preservando su menú/gating.
+    // Consola (NEX-65): layout bajo el prefijo `/console`, envuelto por el guard de
+    // SESIÓN (NEX-61) — el guard es agnóstico del path. `handle.titulo` aporta el nivel
+    // "Consola" al breadcrumb. Los hijos son relativos → /console/inicio, /console/perfil.
+    path: SEGMENTOS.consola,
+    handle: { titulo: 'Consola' },
     element: (
       <RequiereSesion>
         <AppShell />
@@ -48,15 +45,21 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        // Destino autenticado tras el login (F-002), ahora dentro del AppShell.
-        // `handle.titulo` alimenta el breadcrumb (convención dirigida por datos).
-        path: '/inicio',
+        // Índice de la consola (NEX-65): `/console` redirige a `/console/inicio`, para
+        // que teclear `/console` o pulsar el crumb "Consola" del breadcrumb no aterrice
+        // en un AppShell con contenido vacío. Sin literales: usa el módulo de rutas.
+        index: true,
+        loader: () => redirect(RUTAS.inicio),
+      },
+      {
+        // Destino autenticado tras el login (F-002).
+        path: SEGMENTOS.inicio,
         handle: { titulo: 'Inicio' },
         element: <PostLoginPlaceholder />,
       },
       {
-        // Ruta protegida por el guard: sin `usuario.ver_propio` → AccesoDenegado.
-        path: '/perfil',
+        // Sesión (guard padre) + permiso: sin `usuario.ver_propio` → AccesoDenegado.
+        path: SEGMENTOS.perfil,
         handle: { titulo: 'Mi perfil' },
         element: (
           <RutaProtegida clave="usuario.ver_propio">
@@ -65,15 +68,5 @@ export const router = createBrowserRouter([
         ),
       },
     ],
-  },
-  {
-    path: '/console',
-    element: <ConsoleLayout />,
-    children: [{ index: true, element: <ConsoleHome /> }],
-  },
-  {
-    path: '/portal',
-    element: <PortalLayout />,
-    children: [{ index: true, element: <PortalHome /> }],
   },
 ])

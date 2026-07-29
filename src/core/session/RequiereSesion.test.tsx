@@ -93,6 +93,12 @@ describe('RequiereSesion (guard de sesión)', () => {
   it('con sesión, /console (índice) aterriza en /console/inicio', async () => {
     setToken('token-abc')
 
+    // Router MÍNIMO: solo las rutas que este caso ejercita (índice de /console y su
+    // redirect a /console/inicio). NO añadir aquí la ruta `/:slug/login`: una ruta
+    // dinámica hermana hace que react-router, al reconciliar el estado tras el redirect
+    // del loader índice, lea `manifest[match.route.id]` como undefined y lance un
+    // unhandled rejection (los asserts pasan, pero vitest sale con exit 1). El redirect
+    // se prueba igual sin esa ruta irrelevante.
     const router = createMemoryRouter(
       [
         {
@@ -107,7 +113,6 @@ describe('RequiereSesion (guard de sesión)', () => {
             { path: 'inicio', element: <p>consola inicio</p> },
           ],
         },
-        { path: '/:slug/login', element: <PantallaLogin /> },
       ],
       { initialEntries: ['/console'] },
     )

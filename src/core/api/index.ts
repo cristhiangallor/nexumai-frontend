@@ -3,4 +3,5 @@ export type {
   LoginRequest,
   LoginResponse,
   PerfilResponse,
+  UsuarioResumen,
 } from './contracts'

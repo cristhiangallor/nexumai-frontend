@@ -1,5 +1,6 @@
 export {
   apiGet,
+  apiGetConRespuesta,
   apiPost,
   ApiError,
   request,

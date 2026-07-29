@@ -60,13 +60,15 @@ export interface RequestOptions {
 }
 
 /**
- * Ejecuta una petición contra el backend y devuelve el JSON tipado como `T`.
- * Lanza `ApiError` en respuestas no exitosas; deja propagar errores de red.
+ * Núcleo: ejecuta la petición y devuelve el cuerpo parseado JUNTO con el `Response`,
+ * para poder leer headers de respuesta (p. ej. `X-Total-Count`). Base de `request` y
+ * de `apiGetConRespuesta`. Lanza `ApiError` en respuestas no exitosas; deja propagar
+ * errores de red.
  */
-export async function request<T>(
+async function requestBase<T>(
   path: string,
   options: RequestOptions = {},
-): Promise<T> {
+): Promise<{ datos: T; respuesta: Response }> {
   const {
     method = 'GET',
     body,
@@ -95,14 +97,14 @@ export async function request<T>(
     }
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
+  const respuesta = await fetch(`${baseUrl}${path}`, {
     method,
     headers: finalHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),
     signal,
   })
 
-  if (response.status === 401 && auth) {
+  if (respuesta.status === 401 && auth) {
     // Sesión expirada/invalidada en una petición autenticada. Capturar el slug ANTES
     // de limpiar (clearSession lo borra) para que el handler pueda redirigir al login
     // del tenant. El logout voluntario pasa `skipUnauthorizedHandler`: un 401 ahí es el
@@ -114,16 +116,41 @@ export async function request<T>(
     }
   }
 
-  if (!response.ok) {
-    throw new ApiError(response.status)
+  if (!respuesta.ok) {
+    throw new ApiError(respuesta.status)
   }
 
   // `204 No Content` o cuerpo vacío → sin JSON que parsear.
-  if (response.status === 204) {
-    return undefined as T
+  if (respuesta.status === 204) {
+    return { datos: undefined as T, respuesta }
   }
-  const text = await response.text()
-  return (text ? JSON.parse(text) : undefined) as T
+  const text = await respuesta.text()
+  return { datos: (text ? JSON.parse(text) : undefined) as T, respuesta }
+}
+
+/**
+ * Ejecuta una petición contra el backend y devuelve el JSON tipado como `T`.
+ * Lanza `ApiError` en respuestas no exitosas; deja propagar errores de red.
+ */
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { datos } = await requestBase<T>(path, options)
+  return datos
+}
+
+/**
+ * Como `apiGet` pero devuelve también el `Response`, para leer headers de respuesta
+ * (p. ej. `X-Total-Count` en listados paginados). Aditivo: NO cambia `request`,
+ * `apiGet` ni `apiPost`. El header puede no llegar (proxy/CORS): el consumidor debe
+ * tolerar su ausencia.
+ */
+export async function apiGetConRespuesta<T>(
+  path: string,
+  options?: Omit<RequestOptions, 'method' | 'body'>,
+): Promise<{ datos: T; respuesta: Response }> {
+  return requestBase<T>(path, { ...options, method: 'GET' })
 }
 
 /** Atajo `GET`. */

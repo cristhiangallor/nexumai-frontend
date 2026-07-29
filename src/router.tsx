@@ -3,13 +3,22 @@ import { createBrowserRouter, Outlet, redirect } from 'react-router'
 import { AppShell } from './console/AppShell'
 import { RutaProtegida } from './core/permissions'
 import { getToken, RequiereSesion } from './core/session'
+import { EstablecerPasswordPage } from './features/auth/EstablecerPasswordPage'
 import { LoginPage } from './features/auth/LoginPage'
+import { RecuperarPasswordPage } from './features/auth/RecuperarPasswordPage'
 import { PerfilPage } from './features/perfil/PerfilPage'
 import { UsuarioDetallePage } from './features/usuarios/UsuarioDetallePage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
 import { PostLoginPlaceholder } from './PostLoginPlaceholder'
-import { PARAM_USUARIO_ID, PATRON_LOGIN, RUTAS, SEGMENTOS } from './rutas'
+import {
+  PARAM_USUARIO_ID,
+  PATRON_ESTABLECER_PASSWORD,
+  PATRON_LOGIN,
+  PATRON_RECUPERAR,
+  RUTAS,
+  SEGMENTOS,
+} from './rutas'
 
 /**
  * Convergencia de rutas de `/` (F-004): decide a dónde cae la raíz según la sesión.
@@ -33,6 +42,17 @@ export const router = createBrowserRouter([
     // Único path con `:slug` (tenant). El slug se lee con `useParams` en LoginPage.
     path: PATRON_LOGIN,
     element: <LoginPage />,
+  },
+  {
+    // Público tenant-scoped (NEX-45): solicitar enlace de recuperación.
+    path: PATRON_RECUPERAR,
+    element: <RecuperarPasswordPage />,
+  },
+  {
+    // Público tenant-scoped (NEX-45): establecer contraseña con el token del enlace
+    // (query param). Sin guard: es anónimo. Mismo endpoint que reusará NEX-47.
+    path: PATRON_ESTABLECER_PASSWORD,
+    element: <EstablecerPasswordPage />,
   },
   {
     // Consola (NEX-65): layout bajo el prefijo `/console`, envuelto por el guard de

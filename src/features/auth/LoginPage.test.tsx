@@ -273,3 +273,42 @@ describe('LoginPage — aviso de sesión expirada (NEX-62)', () => {
     ).toBeNull()
   })
 })
+
+describe('LoginPage — recuperar contraseña (NEX-45)', () => {
+  it('enlaza a la recuperación del tenant, conservando el slug', () => {
+    renderLogin('/acme/login')
+
+    expect(
+      screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' }),
+    ).toHaveAttribute('href', '/acme/recuperar')
+  })
+
+  it('muestra el aviso de contraseña actualizada al volver tras establecerla', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter
+          initialEntries={[
+            {
+              pathname: '/acme/login',
+              state: { avisoPasswordActualizada: true },
+            },
+          ]}
+        >
+          <Routes>
+            <Route path="/:slug/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /tu contraseña se actualizó/i,
+    )
+  })
+})

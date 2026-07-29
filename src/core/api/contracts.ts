@@ -20,6 +20,27 @@ export interface LoginResponse {
   token: string
 }
 
+/**
+ * Cuerpo de `POST /password/recuperacion` (endpoint ANÓNIMO, NEX-45). Responde `202`
+ * exista o no la cuenta (anti-enumeración); el enlace se envía por correo, nunca en la
+ * respuesta HTTP.
+ */
+export interface RecuperarPasswordRequest {
+  slug: string
+  email: string
+}
+
+/**
+ * Cuerpo de `POST /password` (endpoint ANÓNIMO, NEX-45; también lo usa la activación de
+ * invitado, NEX-47). `token` viene del enlace del correo. `204` éxito; `400` si la
+ * contraseña no cumple la política (mínimo 12); `422` token inválido/expirado/ya usado.
+ */
+export interface EstablecerPasswordRequest {
+  slug: string
+  token: string
+  password: string
+}
+
 /** Estado del usuario en su tenant. Tras un login exitoso siempre es `ACTIVO`. */
 export type EstadoUsuario = 'INVITADO' | 'ACTIVO' | 'DESACTIVADO'
 

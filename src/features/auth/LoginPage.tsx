@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/core/http'
 import { setSlug } from '@/core/session'
-import { RUTAS } from '@/rutas'
+import { RUTAS, rutaRecuperar } from '@/rutas'
 
 import { useLogin } from './useLogin'
 
@@ -50,9 +50,15 @@ export function LoginPage() {
   const estadoNavegacion = location.state as {
     avisoCierreSesion?: boolean
     avisoSesionExpirada?: boolean
+    avisoPasswordActualizada?: boolean
   } | null
   const avisoCierreSesion = Boolean(estadoNavegacion?.avisoCierreSesion)
   const avisoSesionExpirada = Boolean(estadoNavegacion?.avisoSesionExpirada)
+  // Clave PROPIA del flujo de recuperación (NEX-45). La activación (NEX-47) usará otra
+  // clave distinta para su "cuenta activada": no se mezclan significados aquí.
+  const avisoPasswordActualizada = Boolean(
+    estadoNavegacion?.avisoPasswordActualizada,
+  )
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -107,6 +113,14 @@ export function LoginPage() {
             className="mb-4 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
           >
             Tu sesión expiró. Inicia sesión de nuevo.
+          </p>
+        )}
+        {avisoPasswordActualizada && (
+          <p
+            role="status"
+            className="mb-4 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
+          >
+            Tu contraseña se actualizó. Inicia sesión con la nueva.
           </p>
         )}
         {avisoCierreSesion && (
@@ -186,6 +200,15 @@ export function LoginPage() {
             {login.isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </Button>
         </form>
+
+        <p className="mt-4 text-sm">
+          <Link
+            to={rutaRecuperar(slug)}
+            className="text-primary hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
       </div>
     </main>
   )

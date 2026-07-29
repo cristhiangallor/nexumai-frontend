@@ -1,13 +1,15 @@
-import { createBrowserRouter, redirect } from 'react-router'
+import { createBrowserRouter, Outlet, redirect } from 'react-router'
 
 import { AppShell } from './console/AppShell'
 import { RutaProtegida } from './core/permissions'
 import { getToken, RequiereSesion } from './core/session'
 import { LoginPage } from './features/auth/LoginPage'
 import { PerfilPage } from './features/perfil/PerfilPage'
+import { UsuarioDetallePage } from './features/usuarios/UsuarioDetallePage'
+import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
 import { PostLoginPlaceholder } from './PostLoginPlaceholder'
-import { PATRON_LOGIN, RUTAS, SEGMENTOS } from './rutas'
+import { PARAM_USUARIO_ID, PATRON_LOGIN, RUTAS, SEGMENTOS } from './rutas'
 
 /**
  * Convergencia de rutas de `/` (F-004): decide a dónde cae la raíz según la sesión.
@@ -66,6 +68,26 @@ export const router = createBrowserRouter([
             <PerfilPage />
           </RutaProtegida>
         ),
+      },
+      {
+        // Usuarios (NEX-46): listado + detalle. El guard de PERMISO envuelve un Outlet,
+        // así que ambos hijos exigen `usuario.ver` (sin él → AccesoDenegado, antes de
+        // fetch). `handle.titulo` aporta el nivel "Usuarios" al breadcrumb.
+        path: SEGMENTOS.usuarios,
+        handle: { titulo: 'Usuarios' },
+        element: (
+          <RutaProtegida clave="usuario.ver">
+            <Outlet />
+          </RutaProtegida>
+        ),
+        children: [
+          { index: true, element: <UsuariosPage /> },
+          {
+            path: `:${PARAM_USUARIO_ID}`,
+            handle: { titulo: 'Detalle' },
+            element: <UsuarioDetallePage />,
+          },
+        ],
       },
     ],
   },

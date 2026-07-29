@@ -32,5 +32,6 @@ export interface EntradaMenu {
  */
 export const catalogoMenu: EntradaMenu[] = [
   { etiqueta: 'Inicio', ruta: RUTAS.inicio, permiso: 'usuario.ver_propio' },
+  { etiqueta: 'Usuarios', ruta: RUTAS.usuarios, permiso: 'usuario.ver' },
   { etiqueta: 'Mi perfil', ruta: RUTAS.perfil, permiso: 'usuario.ver_propio' },
 ]

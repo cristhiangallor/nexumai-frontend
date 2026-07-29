@@ -17,10 +17,15 @@ export const SEGMENTOS = {
   inicio: 'inicio',
   /** Hijo relativo → `/console/perfil`. */
   perfil: 'perfil',
+  /** Hijo relativo → `/console/usuarios` (listado; el detalle cuelga de aquí). */
+  usuarios: 'usuarios',
 } as const
 
 /** Patrón del login del tenant para la config del router (único path con `:slug`). */
 export const PATRON_LOGIN = '/:slug/login'
+
+/** Nombre del parámetro de ruta del detalle de usuario (para el router y `useParams`). */
+export const PARAM_USUARIO_ID = 'usuarioId'
 
 /**
  * Paths absolutos para navegar / enlazar. Único lugar donde se construyen: si la
@@ -31,6 +36,7 @@ export const RUTAS = {
   consola: `/${SEGMENTOS.consola}`,
   inicio: `/${SEGMENTOS.consola}/${SEGMENTOS.inicio}`,
   perfil: `/${SEGMENTOS.consola}/${SEGMENTOS.perfil}`,
+  usuarios: `/${SEGMENTOS.consola}/${SEGMENTOS.usuarios}`,
 } as const
 
 /**
@@ -39,4 +45,12 @@ export const RUTAS = {
  */
 export function rutaLogin(slug: string): string {
   return `/${slug}/login`
+}
+
+/**
+ * Construye el path del detalle de un usuario a partir de su `id` de contrato. Único
+ * lugar donde se arma este path (lo usan la tabla y las tarjetas del listado).
+ */
+export function rutaUsuario(id: string): string {
+  return `/${SEGMENTOS.consola}/${SEGMENTOS.usuarios}/${id}`
 }

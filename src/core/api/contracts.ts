@@ -23,6 +23,28 @@ export interface LoginResponse {
 /** Estado del usuario en su tenant. Tras un login exitoso siempre es `ACTIVO`. */
 export type EstadoUsuario = 'INVITADO' | 'ACTIVO' | 'DESACTIVADO'
 
+/**
+ * Fila de `GET /usuarios` y cuerpo de `GET /usuarios/{id}` (gate `usuario.ver`).
+ *
+ * Los nombres replican el formato de cable de ESTE endpoint: `email` y `createdAt`
+ * (no `correo`/`sesionExpiraEn` como en `/me`). No renombrar por consistencia con
+ * otros contratos: cada endpoint transporta su forma tal cual.
+ *
+ * `rol` es `string | null` de forma legítima (un INVITADO puede no tener rol). Se
+ * transporta el `null` fielmente: la CAPA DE DATOS no lo esconde con un valor por
+ * defecto — es la UI quien decide cómo mostrar la ausencia.
+ */
+export interface UsuarioResumen {
+  /** UUID del usuario. Siempre presente. Es el id de enlace al detalle. */
+  id: string
+  nombre: string
+  email: string
+  rol: string | null
+  estado: EstadoUsuario
+  /** Fecha-hora ISO 8601 de alta. Campo ordenable y por defecto del listado. */
+  createdAt: string
+}
+
 /** `200` de `GET /me` (gate universal `usuario.ver_propio`). */
 export interface PerfilResponse {
   nombre: string

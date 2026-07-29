@@ -24,8 +24,20 @@ export const SEGMENTOS = {
 /** Patrón del login del tenant para la config del router (único path con `:slug`). */
 export const PATRON_LOGIN = '/:slug/login'
 
+/** Patrón público para solicitar recuperación de contraseña (NEX-45). */
+export const PATRON_RECUPERAR = '/:slug/recuperar'
+
+/**
+ * Patrón público para establecer una nueva contraseña (NEX-45). El `token` NO va en el
+ * path: viaja como query param `?token=...` y se lee con `useSearchParams`.
+ */
+export const PATRON_ESTABLECER_PASSWORD = '/:slug/establecer-password'
+
 /** Nombre del parámetro de ruta del detalle de usuario (para el router y `useParams`). */
 export const PARAM_USUARIO_ID = 'usuarioId'
+
+/** Nombre del query param del token de establecer contraseña (para la URL y su lectura). */
+export const PARAM_TOKEN_PASSWORD = 'token'
 
 /**
  * Paths absolutos para navegar / enlazar. Único lugar donde se construyen: si la
@@ -53,4 +65,21 @@ export function rutaLogin(slug: string): string {
  */
 export function rutaUsuario(id: string): string {
   return `/${SEGMENTOS.consola}/${SEGMENTOS.usuarios}/${id}`
+}
+
+/** Construye el path para solicitar recuperación de contraseña de un tenant (NEX-45). */
+export function rutaRecuperar(slug: string): string {
+  return `/${slug}/recuperar`
+}
+
+/**
+ * Construye el path para establecer contraseña. El `token` (opcional) se anexa como
+ * query param — así lo arma el enlace del correo; la pantalla lo lee del query. Sin
+ * token, devuelve el path base (p. ej. el enlace "solicitar enlace nuevo" no lo lleva).
+ */
+export function rutaEstablecerPassword(slug: string, token?: string): string {
+  const base = `/${slug}/establecer-password`
+  return token
+    ? `${base}?${PARAM_TOKEN_PASSWORD}=${encodeURIComponent(token)}`
+    : base
 }

@@ -1,6 +1,9 @@
-// Pantalla de listado de usuarios (NEX-46): primera pantalla real de la consola. SOLO
-// LECTURA (invitar/cambiar rol/estado son NEX-47/48/49). Orquesta filtros + tabla/
-// tarjetas + paginación, con estado en la URL, y cubre los cinco estados de UI.
+// Pantalla de listado de usuarios (NEX-46): primera pantalla real de la consola.
+// Orquesta filtros + tabla/tarjetas + paginación, con estado en la URL, y cubre los
+// cinco estados de UI. Punto de entrada a invitar (NEX-47): botón por permiso + aviso
+// de invitación enviada vía location.state.
+
+import { useLocation, useNavigate } from 'react-router'
 
 import {
   EstadoError,
@@ -8,9 +11,11 @@ import {
   SkeletonCard,
   SkeletonTabla,
 } from '@/components/estados'
+import { Button } from '@/components/ui/button'
 import type { UsuarioResumen } from '@/core/api'
 import { ApiError } from '@/core/http'
-import { AccesoDenegado } from '@/core/permissions'
+import { AccesoDenegado, ConPermiso } from '@/core/permissions'
+import { RUTAS } from '@/rutas'
 
 import type { CampoOrden, Orden } from './consultaUsuarios'
 import { hayFiltrosActivos, TAMANO_PAGINA } from './consultaUsuarios'
@@ -22,10 +27,20 @@ import { useConsultaUsuarios } from './useConsultaUsuarios'
 import { useUsuarios } from './useUsuarios'
 
 export function UsuariosPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const { consulta, setFiltro, ordenarPor, irAPagina, limpiarFiltros } =
     useConsultaUsuarios()
   const { data, isPending, isError, error, refetch, isPlaceholderData } =
     useUsuarios(consulta)
+
+  // Aviso de invitación enviada (NEX-47): la clave `avisoInvitacionEnviada` la deja
+  // InvitarUsuarioPage al navegar tras el 201; su valor es el correo invitado. Mismo
+  // patrón que los avisos de LoginPage (banner role="status", sin toast ni deps).
+  const estadoNavegacion = location.state as {
+    avisoInvitacionEnviada?: string
+  } | null
+  const correoInvitado = estadoNavegacion?.avisoInvitacionEnviada
 
   // Estado "sin permiso": el guard de ruta (RutaProtegida usuario.ver) cubre el caso
   // normal ANTES de cualquier fetch; esto atrapa una revocación en caliente (403 del
@@ -36,12 +51,35 @@ export function UsuariosPage() {
 
   return (
     <main className="p-6">
-      <h1 className="m-0 mb-1 text-2xl font-medium tracking-normal text-foreground">
-        Usuarios
-      </h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Personas con acceso a la consola de tu empresa.
-      </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="m-0 text-2xl font-medium tracking-normal text-foreground">
+            Usuarios
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Personas con acceso a la consola de tu empresa.
+          </p>
+        </div>
+        {/* Oculto sin `usuario.invitar` (no deshabilitado): patrón de gating por defecto. */}
+        <ConPermiso clave="usuario.invitar">
+          <Button
+            type="button"
+            variant="default"
+            onClick={() => navigate(RUTAS.invitarUsuario)}
+          >
+            Invitar usuario
+          </Button>
+        </ConPermiso>
+      </div>
+
+      {correoInvitado && (
+        <p
+          role="status"
+          className="mb-6 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
+        >
+          Invitación enviada a {correoInvitado}.
+        </p>
+      )}
 
       <div className="mb-6">
         <FiltrosUsuarios consulta={consulta} onFiltrar={setFiltro} />

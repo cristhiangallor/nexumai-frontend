@@ -340,4 +340,35 @@ describe('InvitarUsuarioPage — permiso', () => {
       ).toBe(false),
     )
   })
+
+  it('con usuario.invitar el guard deja entrar (renderiza el formulario y pide el catálogo)', async () => {
+    setPerfil(perfilConInvitar)
+    configurarFetch({})
+
+    render(
+      <QueryClientProvider client={crearCliente()}>
+        <MemoryRouter initialEntries={['/console/usuarios/invitar']}>
+          <Routes>
+            <Route
+              path="/console/usuarios/invitar"
+              element={
+                <RutaProtegida clave="usuario.invitar">
+                  <InvitarUsuarioPage />
+                </RutaProtegida>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(screen.queryByText('Acceso denegado')).toBeNull()
+    expect(
+      await screen.findByRole('heading', { name: 'Invitar usuario' }),
+    ).toBeInTheDocument()
+    // Entró de verdad: montó y pidió el catálogo.
+    expect(
+      await screen.findByRole('option', { name: 'Administrador' }),
+    ).toBeInTheDocument()
+  })
 })

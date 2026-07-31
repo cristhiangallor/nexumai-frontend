@@ -284,6 +284,36 @@ describe('UsuariosPage — invitar (NEX-47)', () => {
     expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
   })
 
+  it('el listado entra con usuario.ver aunque NO tenga usuario.invitar (el guard de invitar no se le coló)', async () => {
+    setPerfil(perfilCon(['usuario.ver'])) // ver, pero NO invitar
+    fetchMock.mockResolvedValue(
+      mockResponse(200, usuarios, { 'X-Total-Count': '2' }),
+    )
+
+    render(
+      <QueryClientProvider client={crearCliente()}>
+        <MemoryRouter initialEntries={['/console/usuarios']}>
+          <Routes>
+            <Route
+              path="/console/usuarios"
+              element={
+                <RutaProtegida clave="usuario.ver">
+                  <UsuariosPage />
+                </RutaProtegida>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    // Renderiza el listado (no AccesoDenegado): usuario.ver basta.
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+    expect(screen.queryByText('Acceso denegado')).toBeNull()
+    // Y sin invitar, el botón no aparece.
+    expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
+  })
+
   it('muestra el aviso de invitación enviada desde location.state', async () => {
     fetchMock.mockResolvedValue(
       mockResponse(200, usuarios, { 'X-Total-Count': '2' }),

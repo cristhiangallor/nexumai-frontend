@@ -7,6 +7,7 @@ import { EstablecerPasswordPage } from './features/auth/EstablecerPasswordPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RecuperarPasswordPage } from './features/auth/RecuperarPasswordPage'
 import { PerfilPage } from './features/perfil/PerfilPage'
+import { InvitarUsuarioPage } from './features/usuarios/InvitarUsuarioPage'
 import { UsuarioDetallePage } from './features/usuarios/UsuarioDetallePage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
@@ -90,22 +91,40 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        // Usuarios (NEX-46): listado + detalle. El guard de PERMISO envuelve un Outlet,
-        // así que ambos hijos exigen `usuario.ver` (sin él → AccesoDenegado, antes de
-        // fetch). `handle.titulo` aporta el nivel "Usuarios" al breadcrumb.
+        // Usuarios: el padre es SOLO layout (Outlet) + `handle.titulo` para el
+        // breadcrumb. El guard de PERMISO vive en CADA hijo (NEX-47), porque el gate
+        // pertenece a la ruta, no al layout: listado y detalle exigen `usuario.ver`;
+        // invitar exige `usuario.invitar`. `invitar` (estático) rankea por encima de
+        // `:usuarioId` (dinámico) en React Router, así que nunca se captura como un id.
         path: SEGMENTOS.usuarios,
         handle: { titulo: 'Usuarios' },
-        element: (
-          <RutaProtegida clave="usuario.ver">
-            <Outlet />
-          </RutaProtegida>
-        ),
+        element: <Outlet />,
         children: [
-          { index: true, element: <UsuariosPage /> },
+          {
+            index: true,
+            element: (
+              <RutaProtegida clave="usuario.ver">
+                <UsuariosPage />
+              </RutaProtegida>
+            ),
+          },
+          {
+            path: SEGMENTOS.invitarUsuario,
+            handle: { titulo: 'Invitar' },
+            element: (
+              <RutaProtegida clave="usuario.invitar">
+                <InvitarUsuarioPage />
+              </RutaProtegida>
+            ),
+          },
           {
             path: `:${PARAM_USUARIO_ID}`,
             handle: { titulo: 'Detalle' },
-            element: <UsuarioDetallePage />,
+            element: (
+              <RutaProtegida clave="usuario.ver">
+                <UsuarioDetallePage />
+              </RutaProtegida>
+            ),
           },
         ],
       },

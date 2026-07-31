@@ -19,6 +19,8 @@ export const SEGMENTOS = {
   perfil: 'perfil',
   /** Hijo relativo → `/console/usuarios` (listado; el detalle cuelga de aquí). */
   usuarios: 'usuarios',
+  /** Hijo relativo de `usuarios` → `/console/usuarios/invitar` (NEX-47). */
+  invitarUsuario: 'invitar',
 } as const
 
 /** Patrón del login del tenant para la config del router (único path con `:slug`). */
@@ -49,6 +51,7 @@ export const RUTAS = {
   inicio: `/${SEGMENTOS.consola}/${SEGMENTOS.inicio}`,
   perfil: `/${SEGMENTOS.consola}/${SEGMENTOS.perfil}`,
   usuarios: `/${SEGMENTOS.consola}/${SEGMENTOS.usuarios}`,
+  invitarUsuario: `/${SEGMENTOS.consola}/${SEGMENTOS.usuarios}/${SEGMENTOS.invitarUsuario}`,
 } as const
 
 /**

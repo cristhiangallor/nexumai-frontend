@@ -45,6 +45,39 @@ export interface EstablecerPasswordRequest {
 export type EstadoUsuario = 'INVITADO' | 'ACTIVO' | 'DESACTIVADO'
 
 /**
+ * Rol que el actor puede OTORGAR al invitar (`GET /usuarios/roles-asignables`, gate
+ * `usuario.invitar`). El backend YA filtra por jerarquía: la UI pinta lo que llega y NO
+ * replica lógica de roles. Colección cerrada, SIN orden garantizado (se ordena en el
+ * front si se quiere).
+ */
+export interface RolAsignable {
+  id: string
+  nombre: string
+}
+
+/**
+ * Cuerpo de `POST /usuarios/invitaciones` (gate `usuario.invitar`). `rolId` es el `id`
+ * del rol elegido del catálogo. La UI NUNCA construye ni envía el tenant: lo deriva el
+ * backend del token.
+ */
+export interface InvitarUsuarioRequest {
+  nombre: string
+  email: string
+  rolId: string
+}
+
+/**
+ * `201` de `POST /usuarios/invitaciones`. El token de activación NUNCA viene aquí (solo
+ * por correo).
+ */
+export interface InvitarUsuarioResponse {
+  usuarioId: string
+  nombre: string
+  email: string
+  rolId: string
+}
+
+/**
  * Fila de `GET /usuarios` y cuerpo de `GET /usuarios/{id}` (gate `usuario.ver`).
  *
  * Los nombres replican el formato de cable de ESTE endpoint: `email` y `createdAt`

@@ -58,6 +58,11 @@ const perfilSinVer: PerfilResponse = {
   permisos: ['usuario.ver_propio'], // NO tiene usuario.ver
 }
 
+/** Deriva un perfil con la lista de permisos indicada. */
+function perfilCon(permisos: string[]): PerfilResponse {
+  return { ...perfilSinVer, permisos }
+}
+
 let fetchMock: ReturnType<typeof vi.fn>
 
 function crearCliente() {
@@ -249,5 +254,94 @@ describe('UsuariosPage — los cinco estados de UI', () => {
 
     expect(await screen.findByText('Acceso denegado')).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('UsuariosPage — invitar (NEX-47)', () => {
+  it('con usuario.invitar muestra el botón "Invitar usuario"', async () => {
+    setPerfil(perfilCon(['usuario.ver', 'usuario.invitar']))
+    fetchMock.mockResolvedValue(
+      mockResponse(200, usuarios, { 'X-Total-Count': '2' }),
+    )
+
+    renderListado()
+
+    await screen.findByRole('table')
+    expect(
+      screen.getByRole('button', { name: 'Invitar usuario' }),
+    ).toBeInTheDocument()
+  })
+
+  it('sin usuario.invitar NO renderiza el botón (oculto, no deshabilitado)', async () => {
+    setPerfil(perfilCon(['usuario.ver']))
+    fetchMock.mockResolvedValue(
+      mockResponse(200, usuarios, { 'X-Total-Count': '2' }),
+    )
+
+    renderListado()
+
+    await screen.findByRole('table')
+    expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
+  })
+
+  it('el listado entra con usuario.ver aunque NO tenga usuario.invitar (el guard de invitar no se le coló)', async () => {
+    setPerfil(perfilCon(['usuario.ver'])) // ver, pero NO invitar
+    fetchMock.mockResolvedValue(
+      mockResponse(200, usuarios, { 'X-Total-Count': '2' }),
+    )
+
+    render(
+      <QueryClientProvider client={crearCliente()}>
+        <MemoryRouter initialEntries={['/console/usuarios']}>
+          <Routes>
+            <Route
+              path="/console/usuarios"
+              element={
+                <RutaProtegida clave="usuario.ver">
+                  <UsuariosPage />
+                </RutaProtegida>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    // Renderiza el listado (no AccesoDenegado): usuario.ver basta.
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+    expect(screen.queryByText('Acceso denegado')).toBeNull()
+    // Y sin invitar, el botón no aparece.
+    expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
+  })
+
+  it('muestra el aviso de invitación enviada desde location.state', async () => {
+    fetchMock.mockResolvedValue(
+      mockResponse(200, usuarios, { 'X-Total-Count': '2' }),
+    )
+
+    render(
+      <QueryClientProvider client={crearCliente()}>
+        <MemoryRouter
+          initialEntries={[
+            {
+              pathname: '/console/usuarios',
+              state: { avisoInvitacionEnviada: 'ana@x.com' },
+            },
+          ]}
+        >
+          <Routes>
+            <Route path="/console/usuarios" element={<UsuariosPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(
+      await screen.findByText('Invitación enviada a ana@x.com.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Invitación enviada a ana@x.com.')).toHaveAttribute(
+      'role',
+      'status',
+    )
   })
 })

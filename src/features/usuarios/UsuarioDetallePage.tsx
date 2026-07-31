@@ -12,9 +12,10 @@ import {
   tonoDeEstadoUsuario,
 } from '@/components/estados'
 import { ApiError } from '@/core/http'
-import { AccesoDenegado } from '@/core/permissions'
+import { AccesoDenegado, usePermiso } from '@/core/permissions'
 import { PARAM_USUARIO_ID, RUTAS } from '@/rutas'
 
+import { AsignarRolControl } from './AsignarRolControl'
 import { ETIQUETA_ESTADO, formatearFecha } from './etiquetas'
 import { useUsuario } from './useUsuarios'
 
@@ -37,6 +38,9 @@ function NoEncontrado() {
 export function UsuarioDetallePage() {
   const id = useParams()[PARAM_USUARIO_ID]
   const { data, isPending, isError, error, refetch } = useUsuario(id)
+  // Con `usuario.asignar_rol` el rol se vuelve editable (NEX-48); sin el permiso, el rol
+  // se muestra como texto (comportamiento de F-009 intacto).
+  const puedeAsignarRol = usePermiso('usuario.asignar_rol')
 
   // Revocación de permiso en caliente (403): AccesoDenegado, no EstadoError.
   if (isError && error instanceof ApiError && error.status === 403) {
@@ -72,10 +76,20 @@ export function UsuarioDetallePage() {
           <dd>{data.nombre}</dd>
           <dt className="font-medium text-muted-foreground">Correo</dt>
           <dd>{data.email}</dd>
-          <dt className="font-medium text-muted-foreground">Rol</dt>
+          <dt id="rol-label" className="font-medium text-muted-foreground">
+            Rol
+          </dt>
           <dd>
-            {data.rol ?? (
-              <span className="text-muted-foreground">Sin rol asignado</span>
+            {puedeAsignarRol ? (
+              <AsignarRolControl
+                usuarioId={id as string}
+                rolActual={data.rol}
+                etiquetaId="rol-label"
+              />
+            ) : (
+              (data.rol ?? (
+                <span className="text-muted-foreground">Sin rol asignado</span>
+              ))
             )}
           </dd>
           <dt className="font-medium text-muted-foreground">Estado</dt>

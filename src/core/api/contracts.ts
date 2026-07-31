@@ -78,6 +78,15 @@ export interface InvitarUsuarioResponse {
 }
 
 /**
+ * Cuerpo de `PUT /usuarios/{id}/rol` (gate `usuario.asignar_rol`, NEX-48). `204` éxito;
+ * `403` sin permiso O violación de jerarquía (indistinguible, cuerpo vacío); `404`
+ * destino inexistente/otro tenant; `422` rolId no válido del tenant.
+ */
+export interface AsignarRolRequest {
+  rolId: string
+}
+
+/**
  * Fila de `GET /usuarios` y cuerpo de `GET /usuarios/{id}` (gate `usuario.ver`).
  *
  * Los nombres replican el formato de cable de ESTE endpoint: `email` y `createdAt`

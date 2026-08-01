@@ -51,14 +51,17 @@ export function LoginPage() {
     avisoCierreSesion?: boolean
     avisoSesionExpirada?: boolean
     avisoPasswordActualizada?: boolean
+    avisoCuentaActivada?: boolean
   } | null
   const avisoCierreSesion = Boolean(estadoNavegacion?.avisoCierreSesion)
   const avisoSesionExpirada = Boolean(estadoNavegacion?.avisoSesionExpirada)
-  // Clave PROPIA del flujo de recuperación (NEX-45). La activación (NEX-47) usará otra
-  // clave distinta para su "cuenta activada": no se mezclan significados aquí.
+  // Clave PROPIA del flujo de recuperación (NEX-45), distinta de la de activación:
+  // no se mezclan significados en la misma clave.
   const avisoPasswordActualizada = Boolean(
     estadoNavegacion?.avisoPasswordActualizada,
   )
+  // Clave PROPIA del flujo de activación de invitado (NEX-69).
+  const avisoCuentaActivada = Boolean(estadoNavegacion?.avisoCuentaActivada)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -121,6 +124,14 @@ export function LoginPage() {
             className="mb-4 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
           >
             Tu contraseña se actualizó. Inicia sesión con la nueva.
+          </p>
+        )}
+        {avisoCuentaActivada && (
+          <p
+            role="status"
+            className="mb-4 rounded-md bg-info-soft px-3 py-2 text-sm text-info-text"
+          >
+            Tu cuenta quedó activada. Ya puedes iniciar sesión.
           </p>
         )}
         {avisoCierreSesion && (

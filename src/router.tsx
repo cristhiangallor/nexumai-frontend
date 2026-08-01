@@ -3,6 +3,7 @@ import { createBrowserRouter, Outlet, redirect } from 'react-router'
 import { AppShell } from './console/AppShell'
 import { RutaProtegida } from './core/permissions'
 import { getToken, RequiereSesion } from './core/session'
+import { ActivarCuentaPage } from './features/auth/ActivarCuentaPage'
 import { EstablecerPasswordPage } from './features/auth/EstablecerPasswordPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RecuperarPasswordPage } from './features/auth/RecuperarPasswordPage'
@@ -14,6 +15,7 @@ import { LandingPublicaPlaceholder } from './LandingPublicaPlaceholder'
 import { PostLoginPlaceholder } from './PostLoginPlaceholder'
 import {
   PARAM_USUARIO_ID,
+  PATRON_ACTIVAR,
   PATRON_ESTABLECER_PASSWORD,
   PATRON_LOGIN,
   PATRON_RECUPERAR,
@@ -51,9 +53,15 @@ export const router = createBrowserRouter([
   },
   {
     // Público tenant-scoped (NEX-45): establecer contraseña con el token del enlace
-    // (query param). Sin guard: es anónimo. Mismo endpoint que reusará NEX-47.
+    // (query param). Sin guard: es anónimo. Mismo endpoint que reusa NEX-69.
     path: PATRON_ESTABLECER_PASSWORD,
     element: <EstablecerPasswordPage />,
+  },
+  {
+    // Público tenant-scoped (NEX-69): activar cuenta de invitado con el token del correo
+    // (query param). Anónimo, mismo endpoint POST /password que establecer-password.
+    path: PATRON_ACTIVAR,
+    element: <ActivarCuentaPage />,
   },
   {
     // Consola (NEX-65): layout bajo el prefijo `/console`, envuelto por el guard de

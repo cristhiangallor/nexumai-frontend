@@ -9,7 +9,7 @@ import { useEstablecerPassword } from './useEstablecerPassword'
 
 /**
  * Copy que cambia entre flujos que comparten este formulario: recuperación (NEX-45) y
- * activación de invitado (NEX-47). El mensaje de éxito NO va aquí: el éxito navega al
+ * activación de invitado (NEX-69). El mensaje de éxito NO va aquí: el éxito navega al
  * login y es LoginPage quien muestra el aviso, con una clave de `location.state` propia
  * de cada flujo (no se mezclan significados en la misma clave).
  */
@@ -18,6 +18,18 @@ export interface TextosEstablecerPassword {
   descripcion: string
   etiquetaBoton: string
   etiquetaBotonEnviando: string
+  /**
+   * Mensaje del `422` (token inválido/expirado/usado). DIVERGE por flujo: recuperación
+   * invita a pedir otro enlace uno mismo; activación remite al administrador (el invitado
+   * no puede auto-reenviarse la invitación). Por eso el 422 se parametriza aquí.
+   */
+  mensajeEnlaceInvalido: string
+}
+
+/** Acción opcional junto al mensaje de `422` (p. ej. "Solicitar un enlace nuevo"). */
+interface AccionEnlaceInvalido {
+  etiqueta: string
+  ruta: string
 }
 
 interface FormularioEstablecerPasswordProps {
@@ -29,21 +41,24 @@ interface FormularioEstablecerPasswordProps {
   textos: TextosEstablecerPassword
   /** Navegación tras `204`. Cada flujo decide su destino y su aviso (clave de estado). */
   onExito: () => void
-  /** Destino del enlace "solicitar uno nuevo" cuando el token es inválido (`422`). */
-  rutaNuevoEnlace: string
+  /**
+   * Acción a ofrecer en el `422` (opcional). Recuperación pasa "Solicitar un enlace
+   * nuevo"; activación la OMITE (el invitado no puede auto-reenviarse: sin enlace).
+   */
+  accionEnlaceInvalido?: AccionEnlaceInvalido
 }
 
 const ID_AYUDA_LONGITUD = 'password-longitud'
 
 /**
  * Traduce el error a un mensaje humano es-MX. El `400` de política usa mensaje PROPIO:
- * el cuerpo del backend no se pinta (podría no ser presentable). El `422` cubre token
- * inválido/expirado/ya usado (indistinguibles a propósito).
+ * el cuerpo del backend no se pinta (podría no ser presentable). El `422` (token
+ * inválido/expirado/ya usado) usa el mensaje que aporta el flujo (diverge por flujo).
  */
-function mensajeDeError(error: unknown): string {
+function mensajeDeError(error: unknown, mensajeEnlaceInvalido: string): string {
   if (error instanceof ApiError) {
     if (error.status === 422) {
-      return 'El enlace es inválido, expiró o ya se usó.'
+      return mensajeEnlaceInvalido
     }
     if (error.status === 400) {
       return `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.`
@@ -64,7 +79,7 @@ export function FormularioEstablecerPassword({
   token,
   textos,
   onExito,
-  rutaNuevoEnlace,
+  accionEnlaceInvalido,
 }: FormularioEstablecerPasswordProps) {
   const establecer = useEstablecerPassword()
   const [password, setPassword] = useState('')
@@ -107,11 +122,16 @@ export function FormularioEstablecerPassword({
             role="alert"
             className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger-text"
           >
-            <p>{mensajeDeError(establecer.error)}</p>
-            {esTokenInvalido && (
+            <p>
+              {mensajeDeError(establecer.error, textos.mensajeEnlaceInvalido)}
+            </p>
+            {esTokenInvalido && accionEnlaceInvalido && (
               <p className="mt-2">
-                <Link to={rutaNuevoEnlace} className="font-medium underline">
-                  Solicitar un enlace nuevo
+                <Link
+                  to={accionEnlaceInvalido.ruta}
+                  className="font-medium underline"
+                >
+                  {accionEnlaceInvalido.etiqueta}
                 </Link>
               </p>
             )}

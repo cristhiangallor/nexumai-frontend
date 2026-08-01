@@ -7,12 +7,14 @@ import {
   type TextosEstablecerPassword,
 } from './FormularioEstablecerPassword'
 
-/** Copy del flujo de RECUPERACIÓN (NEX-45). La activación (NEX-47) traerá el suyo. */
+/** Copy del flujo de RECUPERACIÓN (NEX-45). La activación (NEX-69) trae el suyo. */
 const TEXTOS_RECUPERACION: TextosEstablecerPassword = {
   titulo: 'Establecer nueva contraseña',
   descripcion: 'Crea una contraseña de al menos 12 caracteres para tu cuenta.',
   etiquetaBoton: 'Guardar contraseña',
   etiquetaBotonEnviando: 'Guardando…',
+  // En recuperación, un enlace inválido/expirado se resuelve pidiendo otro uno mismo.
+  mensajeEnlaceInvalido: 'El enlace es inválido, expiró o ya se usó.',
 }
 
 /**
@@ -38,7 +40,10 @@ export function EstablecerPasswordPage() {
           state: { avisoPasswordActualizada: true },
         })
       }
-      rutaNuevoEnlace={rutaRecuperar(slug)}
+      accionEnlaceInvalido={{
+        etiqueta: 'Solicitar un enlace nuevo',
+        ruta: rutaRecuperar(slug),
+      }}
     />
   )
 }

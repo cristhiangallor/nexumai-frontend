@@ -35,6 +35,12 @@ export const PATRON_RECUPERAR = '/:slug/recuperar'
  */
 export const PATRON_ESTABLECER_PASSWORD = '/:slug/establecer-password'
 
+/**
+ * Patrón público para activar la cuenta de un invitado (NEX-69). Mismo patrón que
+ * establecer-password: el `token` de activación viaja como query param `?token=...`.
+ */
+export const PATRON_ACTIVAR = '/:slug/activar'
+
 /** Nombre del parámetro de ruta del detalle de usuario (para el router y `useParams`). */
 export const PARAM_USUARIO_ID = 'usuarioId'
 
@@ -82,6 +88,18 @@ export function rutaRecuperar(slug: string): string {
  */
 export function rutaEstablecerPassword(slug: string, token?: string): string {
   const base = `/${slug}/establecer-password`
+  return token
+    ? `${base}?${PARAM_TOKEN_PASSWORD}=${encodeURIComponent(token)}`
+    : base
+}
+
+/**
+ * Construye el path para activar una cuenta de invitado (NEX-69). El `token` (opcional)
+ * se anexa como query param, igual que `rutaEstablecerPassword`; así lo arma el enlace
+ * del correo de invitación.
+ */
+export function rutaActivar(slug: string, token?: string): string {
+  const base = `/${slug}/activar`
   return token
     ? `${base}?${PARAM_TOKEN_PASSWORD}=${encodeURIComponent(token)}`
     : base

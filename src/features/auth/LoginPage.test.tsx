@@ -312,3 +312,36 @@ describe('LoginPage — recuperar contraseña (NEX-45)', () => {
     )
   })
 })
+
+describe('LoginPage — activar cuenta (NEX-69)', () => {
+  it('muestra el aviso de cuenta activada al volver tras activarla', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter
+          initialEntries={[
+            {
+              pathname: '/acme/login',
+              state: { avisoCuentaActivada: true },
+            },
+          ]}
+        >
+          <Routes>
+            <Route path="/:slug/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /tu cuenta quedó activada/i,
+    )
+    // No es el aviso de recuperación.
+    expect(screen.queryByText(/tu contraseña se actualizó/i)).toBeNull()
+  })
+})

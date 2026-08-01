@@ -12,10 +12,11 @@ import {
   tonoDeEstadoUsuario,
 } from '@/components/estados'
 import { ApiError } from '@/core/http'
-import { AccesoDenegado, usePermiso } from '@/core/permissions'
+import { AccesoDenegado, ConPermiso, usePermiso } from '@/core/permissions'
 import { PARAM_USUARIO_ID, RUTAS } from '@/rutas'
 
 import { AsignarRolControl } from './AsignarRolControl'
+import { CambiarEstadoControl } from './CambiarEstadoControl'
 import { ETIQUETA_ESTADO, formatearFecha } from './etiquetas'
 import { useUsuario } from './useUsuarios'
 
@@ -97,6 +98,13 @@ export function UsuarioDetallePage() {
             <EstadoBadge tono={tonoDeEstadoUsuario(data.estado)}>
               {ETIQUETA_ESTADO[data.estado]}
             </EstadoBadge>
+            {/* Show-or-nothing: el badge SIEMPRE se ve; el control solo con permiso. */}
+            <ConPermiso clave="usuario.cambiar_estado">
+              <CambiarEstadoControl
+                usuarioId={id as string}
+                estadoActual={data.estado}
+              />
+            </ConPermiso>
           </dd>
           <dt className="font-medium text-muted-foreground">Fecha de alta</dt>
           <dd>{formatearFecha(data.createdAt)}</dd>

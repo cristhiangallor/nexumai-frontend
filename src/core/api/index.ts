@@ -1,5 +1,6 @@
 export type {
   AsignarRolRequest,
+  CambiarEstadoRequest,
   EstablecerPasswordRequest,
   EstadoUsuario,
   InvitarUsuarioRequest,

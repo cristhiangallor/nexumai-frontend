@@ -87,6 +87,16 @@ export interface AsignarRolRequest {
 }
 
 /**
+ * Cuerpo de `PUT /usuarios/{id}/estado` (gate `usuario.cambiar_estado`, NEX-49). `204`
+ * de EFECTO INMEDIATO (el desactivado pierde acceso en su siguiente request). `403` sin
+ * permiso O violación de jerarquía (D-8/D-3, indistinguible, cuerpo vacío); `404`
+ * inexistente/otro tenant; `422` estado inválido. La UI solo envía ACTIVO⟷DESACTIVADO.
+ */
+export interface CambiarEstadoRequest {
+  estado: EstadoUsuario
+}
+
+/**
  * Fila de `GET /usuarios` y cuerpo de `GET /usuarios/{id}` (gate `usuario.ver`).
  *
  * Los nombres replican el formato de cable de ESTE endpoint: `email` y `createdAt`

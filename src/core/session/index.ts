@@ -9,3 +9,4 @@ export {
   subscribe,
 } from './session'
 export { RequiereSesion } from './RequiereSesion'
+export { usePerfil } from './usePerfil'
